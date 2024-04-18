@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: processor-b
+spec:
+  containers:
+  - name: processor-b
+    image: processor:latest
+    imagePullPolicy: "Never"
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "100m"
+      limits:
+        memory: "32Mi"
+        cpu: "100m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: processor-b
+spec:
+  selector:
+    app.kubernetes.io/name: processor-b
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8083
