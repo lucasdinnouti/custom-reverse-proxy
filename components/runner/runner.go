@@ -11,14 +11,15 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 )
 
 var mutex = &sync.Mutex{}
 var testcase []*Message
 
 type Message struct {
-	datetime string
-    content string
+	datetime string `json:"datetime"`
+	content string `json:"content"`
 }
 
 func parseLine(line string) (*Message, error) {
@@ -68,20 +69,27 @@ func load_testcase(filename string) {
 }
 
 func run_testcase() {
+	log.Println("Running Test Case...")
+
 	for _, message := range testcase {
 		request(message)
+		time.Sleep(1 * time.Second)
 	}
 }
 
 func request(message *Message) {
-	body, err := json.Marshal(message)
+	log.Println("Making Request...")
+	
+	body := new(bytes.Buffer)
+	err := json.NewEncoder(body).Encode(message)
+
 	log.Println("Requesting processor...")
 	log.Println(body)
 
 	result, err := http.Post(
-		"http://proxy.default.svc.cluster.local:8082/test",
+		"http://proxy.default.svc.cluster.local:8082/message",
 		"application/json",
-		bytes.NewBuffer(body))
+		body)
 
 	if err != nil {
 		log.Fatalln(err)
@@ -91,6 +99,8 @@ func request(message *Message) {
 }
 
 func main() {
-	load_testcase("../../datasets/chat_dos/chat_dos.txt")
+	log.Println("Starting Runner!")
+
+	load_testcase("testcase_1.txt")
 	run_testcase()
 }

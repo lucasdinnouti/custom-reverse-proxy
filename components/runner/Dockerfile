@@ -2,7 +2,9 @@ FROM golang:1.19.3-alpine
 
 WORKDIR /app
 
-COPY * ./
+COPY components/runner/* ./
+
+COPY datasets/chat_dos/chat_dos.txt ./testcase_1.txt
 
 RUN go mod download
 
