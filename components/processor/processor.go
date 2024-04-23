@@ -14,8 +14,9 @@ func main() {
 
 	http.HandleFunc("/", echoString)
 
-	http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "Hi")
+	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
+		log.Println("Test request")
+		fmt.Fprintf(w, "Test")
 	})
 
 	log.Fatal(http.ListenAndServe(":8083", nil))
