@@ -1,32 +1,35 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "net/http"
-    "strconv"
-    "sync"
+	"log"
+	"net/http"
+	"sync"
+	"time"
 )
 
 var hits map[string]int
 var mutex = &sync.Mutex{}
 
-func route(w http.ResponseWriter, r *http.Request) {
-    mutex.Lock()
-    hits["instance"]++
-	
-	// TODO: request to proxy, and increment called processor instance 
+func request() {
+	mutex.Lock()
+	hits["instance"]++
 
-    fmt.Fprintf(w, strconv.Itoa(hits["instance"]))
-    mutex.Unlock()
+	log.Println("Requesting processor...")
+	_, err := http.Get("http://proxy.default.svc.cluster.local:8082/test")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	mutex.Unlock()
 }
 
 func main() {
-    http.HandleFunc("/route", route)
+	hits = map[string]int{
+		"instance": 0,
+	}
 
-    http.HandleFunc("/hi", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hi")
-    })
-
-    log.Fatal(http.ListenAndServe(":8081", nil))
+	for {
+		request()
+		time.Sleep(5 * time.Second)
+	}
 }
