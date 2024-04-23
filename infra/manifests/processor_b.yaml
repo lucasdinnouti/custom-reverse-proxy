@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: http-processor-b
   name: processor-b
 spec:
   containers:
@@ -14,6 +16,9 @@ spec:
       limits:
         memory: "32Mi"
         cpu: "100m"
+    ports:
+      - containerPort: 8083
+        protocol: TCP
 
 ---
 apiVersion: v1
@@ -22,8 +27,8 @@ metadata:
   name: processor-b
 spec:
   selector:
-    app.kubernetes.io/name: processor-b
+    app: http-processor-b
   ports:
     - protocol: TCP
-      port: 80
+      port: 8083
       targetPort: 8083
