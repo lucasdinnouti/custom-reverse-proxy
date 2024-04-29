@@ -3,8 +3,8 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -18,26 +18,26 @@ var mutex = &sync.Mutex{}
 var testcase []*Message
 
 type Message struct {
-	datetime string `json:"datetime"`
-	content string `json:"content"`
+	Datetime string `json:"datetime"`
+	Content  string `json:"content"`
 }
 
 func parseLine(line string) (*Message, error) {
 
 	match, err := regexp.MatchString(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \- .*`, line)
 
-    if (err != nil || !match) {
-        return nil, errors.New("Invalid Line")
-    }
+	if err != nil || !match {
+		return nil, errors.New("Invalid Line")
+	}
 
-    sep := " - "
+	sep := " - "
 	s := strings.Split(line, sep)
-    datetime, content := s[0], s[1]
+	datetime, content := s[0], s[1]
 
-    message := Message{
-        datetime: datetime,
-        content: content,
-    }
+	message := Message{
+		Datetime: datetime,
+		Content:  content,
+	}
 
 	return &message, nil
 }
@@ -45,26 +45,26 @@ func parseLine(line string) (*Message, error) {
 func load_testcase(filename string) {
 
 	file, err := os.Open(filename)
-    if err != nil {
-        log.Fatal(err)
-    }
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fileScanner := bufio.NewScanner(file)
 	line := ""
- 
-    fileScanner.Split(bufio.ScanLines)
-  
-    for fileScanner.Scan() {
+
+	fileScanner.Split(bufio.ScanLines)
+
+	for fileScanner.Scan() {
 		line = fileScanner.Text()
-		
+
 		message, err := parseLine(line)
-		if (err == nil) {
+		if err == nil {
 			testcase = append(testcase, message)
 			log.Println(message)
 		}
-    }
+	}
 
-    defer file.Close()
+	defer file.Close()
 
 }
 
@@ -79,7 +79,7 @@ func run_testcase() {
 
 func request(message *Message) {
 	log.Println("Making Request...")
-	
+
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
 
@@ -95,7 +95,7 @@ func request(message *Message) {
 		log.Fatalln(err)
 	}
 
-    log.Println(result)
+	log.Println(result)
 }
 
 func main() {

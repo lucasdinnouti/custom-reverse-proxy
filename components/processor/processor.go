@@ -8,8 +8,8 @@ import (
 )
 
 type Message struct {
-	datetime string `json:"datetime"`
-	content string `json:"content"`
+	Datetime string `json:"datetime"`
+	Content  string `json:"content"`
 }
 
 func echoString(w http.ResponseWriter, r *http.Request) {
@@ -21,7 +21,7 @@ func parseMessage(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(m)
 
-	if (err != nil) {
+	if err != nil {
 		log.Fatalln("Error Parsing Request Body", r.Body)
 	}
 
