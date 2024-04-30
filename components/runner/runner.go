@@ -15,14 +15,21 @@ import (
 
 var testcase []*Message
 
-var validLineRegex = `\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`
-var imageMessageRegex = `IMG-.{16}jpg \(file attached\)`
-var audioMessageRegex = `PTT-.{16}opus \(file attached\)`
+var validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
+var mediaTypeRegex = regexp.MustCompile(`([A-Z]{3})-.{16}(jpg|opus) \(file attached\)`)
+
+type ContentType uint8
+const (
+  Text ContentType = iota
+  Image
+  Audio
+  Unknown
+)
 
 type Message struct {
-	Datetime string `json:"datetime"`
-	Content  string `json:"content"`
-	Type  	 string `json:"type"`
+	Datetime string 	 `json:"datetime"`
+	Content  string 	 `json:"content"`
+	Type 	 ContentType `json:"type"`
 }
 
 func Check(err error) {
@@ -33,9 +40,9 @@ func Check(err error) {
 
 func ParseLine(line string) (*Message, error) {
 
-	match, err := regexp.MatchString(validLineRegex, line)
+	match := validLineRegex.MatchString(line)
 
-	if err != nil || !match {
+	if !match {
 		return nil, errors.New("invalid line")
 	}
 
@@ -52,17 +59,20 @@ func ParseLine(line string) (*Message, error) {
 	return &message, nil
 }
 
-func ResolveContentType(content string) string {
-	contentType := "text"
+func ResolveContentType(content string) ContentType {
+	contentType := Text
 
-	match, err := regexp.MatchString(imageMessageRegex, content)
-	if err != nil && match {
-		contentType = "image"
-	}
-	
-	match, err = regexp.MatchString(audioMessageRegex, content)
-	if err != nil && match {
-		contentType = "audio"
+	match := mediaTypeRegex.MatchString(content)
+
+	if match {
+		switch mediaTypeRegex.FindStringSubmatch(content)[0][0:3] {
+		case "IMG":
+			return Image
+		case "PTT":
+			return Audio
+		default:
+			return Text
+		}
 	}
 
 	return contentType
