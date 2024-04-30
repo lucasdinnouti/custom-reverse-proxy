@@ -54,7 +54,7 @@ func main() {
 
 	targetProxy["b"] = httputil.NewSingleHostReverseProxy(remoteUrl)
 
-	http.HandleFunc("/test", route)
+	http.HandleFunc("/message", route)
 
 	http.ListenAndServe(":8082", nil)
 }

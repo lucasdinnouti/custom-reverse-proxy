@@ -1,10 +1,3 @@
-cd components/processor
-docker build  -t processor .
-
-cd ../proxy
-docker build  -t proxy .
-
-cd ../runner
-docker build  -t runner .
-
-cd ../..
+docker build  -t processor -f ./components/processor/Dockerfile .
+docker build  -t proxy -f ./components/proxy/Dockerfile .
+docker build  -t runner -f ./components/runner/Dockerfile .
