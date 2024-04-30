@@ -4,14 +4,14 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
 	"os"
 	"proxy/selectors"
+	"proxy/targets"
 )
 
 var (
 	routeSelector Selector
-	targetProxy   map[string]*httputil.ReverseProxy = map[string]*httputil.ReverseProxy{}
+	targetProxy   map[string]*httputil.ReverseProxy
 )
 
 type Selector interface {
@@ -47,20 +47,7 @@ func main() {
 		routeSelector = selectors.NewRoundRobin()
 	}
 
-	remoteUrl, err := url.Parse("http://processor-a.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return
-	}
-	targetProxy["a"] = httputil.NewSingleHostReverseProxy(remoteUrl)
-
-	remoteUrl, err = url.Parse("http://processor-b.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return
-	}
-	targetProxy["b"] = httputil.NewSingleHostReverseProxy(remoteUrl)
-
+	targetProxy = targets.Get()
 	http.HandleFunc("/message", route)
 
 	http.ListenAndServe(":8082", nil)
