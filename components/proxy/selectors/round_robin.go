@@ -4,13 +4,13 @@ type RoundRobin struct {
 	Counter int
 }
 
-func NewRoundRobin() RoundRobin {
-	return RoundRobin{
+func NewRoundRobin() *RoundRobin {
+	return &RoundRobin{
 		Counter: 0,
 	}
 }
 
-func (r RoundRobin) Select() string {
+func (r *RoundRobin) Select() string {
 	r.Counter++
 
 	if r.Counter%2 == 0 {

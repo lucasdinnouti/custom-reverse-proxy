@@ -3,10 +3,10 @@ package selectors
 type Metadata struct {
 }
 
-func NewMetadata() Metadata {
-	return Metadata{}
+func NewMetadata() *Metadata {
+	return &Metadata{}
 }
 
-func (r Metadata) Select() string {
+func (r *Metadata) Select() string {
 	return "a"
 }

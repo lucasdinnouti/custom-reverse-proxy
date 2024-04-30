@@ -3,10 +3,10 @@ package selectors
 type MachineLearning struct {
 }
 
-func NewMachineLearning() MachineLearning {
-	return MachineLearning{}
+func NewMachineLearning() *MachineLearning {
+	return &MachineLearning{}
 }
 
-func (r MachineLearning) Select() string {
+func (r *MachineLearning) Select() string {
 	return "a"
 }
