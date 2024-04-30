@@ -7,9 +7,18 @@ import (
 	"net/http"
 )
 
+type ContentType uint8
+const (
+  Text ContentType = iota
+  Image
+  Audio
+  Unknown
+)
+
 type Message struct {
-	Datetime string `json:"datetime"`
-	Content  string `json:"content"`
+	Datetime string 	 `json:"datetime"`
+	Content  string 	 `json:"content"`
+	Type 	 ContentType `json:"type"`
 }
 
 func echoString(w http.ResponseWriter, r *http.Request) {

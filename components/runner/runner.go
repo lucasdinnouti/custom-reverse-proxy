@@ -10,24 +10,40 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 )
 
-var mutex = &sync.Mutex{}
 var testcase []*Message
 
+var validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
+var mediaTypeRegex = regexp.MustCompile(`([A-Z]{3})-.{16}(jpg|opus) \(file attached\)`)
+
+type ContentType uint8
+const (
+  Text ContentType = iota
+  Image
+  Audio
+  Unknown
+)
+
 type Message struct {
-	Datetime string `json:"datetime"`
-	Content  string `json:"content"`
+	Datetime string 	 `json:"datetime"`
+	Content  string 	 `json:"content"`
+	Type 	 ContentType `json:"type"`
 }
 
-func parseLine(line string) (*Message, error) {
+func Check(err error) {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
-	match, err := regexp.MatchString(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \- .*`, line)
+func ParseLine(line string) (*Message, error) {
 
-	if err != nil || !match {
-		return nil, errors.New("Invalid Line")
+	match := validLineRegex.MatchString(line)
+
+	if !match {
+		return nil, errors.New("invalid line")
 	}
 
 	sep := " - "
@@ -37,17 +53,35 @@ func parseLine(line string) (*Message, error) {
 	message := Message{
 		Datetime: datetime,
 		Content:  content,
+		Type: ResolveContentType(content),
 	}
 
 	return &message, nil
 }
 
-func load_testcase(filename string) {
+func ResolveContentType(content string) ContentType {
+	contentType := Text
+
+	match := mediaTypeRegex.MatchString(content)
+
+	if match {
+		switch mediaTypeRegex.FindStringSubmatch(content)[0][0:3] {
+		case "IMG":
+			return Image
+		case "PTT":
+			return Audio
+		default:
+			return Text
+		}
+	}
+
+	return contentType
+}
+
+func LoadTestCase(filename string) {
 
 	file, err := os.Open(filename)
-	if err != nil {
-		log.Fatal(err)
-	}
+	Check(err)
 
 	fileScanner := bufio.NewScanner(file)
 	line := ""
@@ -57,7 +91,7 @@ func load_testcase(filename string) {
 	for fileScanner.Scan() {
 		line = fileScanner.Text()
 
-		message, err := parseLine(line)
+		message, err := ParseLine(line)
 		if err == nil {
 			testcase = append(testcase, message)
 			log.Println(message)
@@ -68,7 +102,7 @@ func load_testcase(filename string) {
 
 }
 
-func run_testcase() {
+func RunTestCase() {
 	log.Println("Running Test Case...")
 
 	for _, message := range testcase {
@@ -82,6 +116,8 @@ func request(message *Message) {
 
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
+	
+	Check(err)
 
 	log.Println("Requesting processor...")
 	log.Println(body)
@@ -101,6 +137,6 @@ func request(message *Message) {
 func main() {
 	log.Println("Starting Runner!")
 
-	load_testcase("testcase_1.txt")
-	run_testcase()
+	LoadTestCase("testcase_1.txt")
+	RunTestCase()
 }
