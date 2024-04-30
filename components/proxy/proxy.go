@@ -38,11 +38,11 @@ func main() {
 	case "round_robin":
 		routeSelector = selectors.NewRoundRobin()
 	case "weighted_round_robin":
-		routeSelector = selectors.NewRoundRobin()
+		routeSelector = selectors.NewWeightedRoundRobin()
 	case "metadata":
-		routeSelector = selectors.NewRoundRobin()
+		routeSelector = selectors.NewMetadata()
 	case "machine_learning":
-		routeSelector = selectors.NewRoundRobin()
+		routeSelector = selectors.NewMachineLearning()
 	default:
 		routeSelector = selectors.NewRoundRobin()
 	}
