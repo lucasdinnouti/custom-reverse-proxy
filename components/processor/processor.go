@@ -10,6 +10,7 @@ import (
 type Message struct {
 	Datetime string `json:"datetime"`
 	Content  string `json:"content"`
+	Type  	 string `json:"type"`
 }
 
 func echoString(w http.ResponseWriter, r *http.Request) {
