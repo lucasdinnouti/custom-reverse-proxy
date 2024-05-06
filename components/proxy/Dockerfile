@@ -2,7 +2,9 @@ FROM golang:1.19.3-alpine
 
 WORKDIR /app
 
-COPY components/proxy/* ./
+COPY components/proxy/ ./
+
+RUN ls
 
 RUN go mod download
 

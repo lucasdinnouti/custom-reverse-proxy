@@ -16,6 +16,9 @@ spec:
       limits:
         memory: "64Mi"
         cpu: "200m"
+    env:
+      - name: ALGORITHM
+        value: "round_robin"
     ports:
       - containerPort: 8082
         protocol: TCP

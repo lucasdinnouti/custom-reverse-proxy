@@ -4,26 +4,22 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"net/url"
+	"os"
+	"proxy/selectors"
+	"proxy/targets"
 )
 
 var (
-	counter     int
-	targetProxy map[string]*httputil.ReverseProxy = map[string]*httputil.ReverseProxy{}
+	routeSelector Selector
+	targetProxy   map[string]*httputil.ReverseProxy
 )
 
-func select_host() string {
-	counter++
-
-	if counter%2 == 0 {
-		return "a"
-	} else {
-		return "b"
-	}
+type Selector interface {
+	Select() string
 }
 
 func route(w http.ResponseWriter, r *http.Request) {
-	target := select_host()
+	target := routeSelector.Select()
 
 	if fn, ok := targetProxy[target]; ok {
 		log.Println("target: ", target)
@@ -38,22 +34,20 @@ func route(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	remoteUrl, err := url.Parse("http://processor-a.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return
+	switch algorithm := os.Getenv("ALGORITHM"); algorithm {
+	case "round_robin":
+		routeSelector = selectors.NewRoundRobin()
+	case "weighted_round_robin":
+		routeSelector = selectors.NewWeightedRoundRobin()
+	case "metadata":
+		routeSelector = selectors.NewMetadata()
+	case "machine_learning":
+		routeSelector = selectors.NewMachineLearning()
+	default:
+		routeSelector = selectors.NewRoundRobin()
 	}
 
-	targetProxy["a"] = httputil.NewSingleHostReverseProxy(remoteUrl)
-
-	remoteUrl, err = url.Parse("http://processor-b.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return
-	}
-
-	targetProxy["b"] = httputil.NewSingleHostReverseProxy(remoteUrl)
-
+	targetProxy = targets.Get()
 	http.HandleFunc("/message", route)
 
 	http.ListenAndServe(":8082", nil)
