@@ -6,4 +6,5 @@ kind load docker-image processor:latest --name crp
 kind load docker-image runner:latest --name crp
 kind load docker-image proxy:latest --name crp
 
-kubectl apply -f ./infra/manifests
+kubectl apply -f ./infra/manifests/components
+kubectl apply -f ./infra/manifests/metrics
