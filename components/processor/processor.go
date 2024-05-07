@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 type ContentType uint8
@@ -21,6 +22,8 @@ type Message struct {
 	Type 	 ContentType `json:"type"`
 }
 
+var rateLimiter = time.Tick(5 * time.Millisecond)
+
 func echoString(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "a")
 }
@@ -36,6 +39,8 @@ func parseMessage(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(r.Body)
 	log.Println(m)
+
+	<-rateLimiter
 
 	fmt.Fprintf(w, "OK")
 }

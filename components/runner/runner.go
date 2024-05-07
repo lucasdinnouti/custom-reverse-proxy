@@ -3,16 +3,20 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"regexp"
 	"strings"
 	"time"
+	"runtime/pprof"
 )
 
+var tpsAtIteration = []int{10, 20, 50, 100}
 var testcase []*Message
 
 var validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
@@ -105,9 +109,15 @@ func LoadTestCase(filename string) {
 func RunTestCase() {
 	log.Println("Running Test Case...")
 
-	for _, message := range testcase {
-		request(message)
-		time.Sleep(1 * time.Second)
+	for _, tps := range tpsAtIteration {
+		log.Printf("Running at %d TPS", tps)
+		limiter := time.Tick(time.Duration(float64(1000 / tps) * float64(time.Millisecond)))
+
+		for _, message := range testcase {
+			<-limiter
+			log.Println("Requesting ", time.Now())
+			request(message)
+		}
 	}
 }
 
@@ -128,15 +138,27 @@ func request(message *Message) {
 		body)
 
 	if err != nil {
-		log.Fatalln(err)
+		log.Println("[ERROR] ", err)
 	}
 
 	log.Println(result)
 }
 
 func main() {
+    // Start a background process that checks the threshold every 30 seconds and dumps a heap profile if necessary
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
 	log.Println("Starting Runner!")
 
 	LoadTestCase("testcase_1.txt")
 	RunTestCase()
+
+	select {
+		case <-time.After(10 * time.Second):
+			log.Println("missed signal")
+		case <-ctx.Done():
+			stop()
+			log.Println("signal received")
+	}
 }
