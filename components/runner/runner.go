@@ -145,7 +145,6 @@ func request(message *Message) {
 }
 
 func main() {
-    // Start a background process that checks the threshold every 30 seconds and dumps a heap profile if necessary
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
