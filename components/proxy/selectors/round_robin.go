@@ -1,5 +1,9 @@
 package selectors
 
+import (
+	"log"
+)
+
 type RoundRobin struct {
 	Counter int
 }
@@ -12,6 +16,8 @@ func NewRoundRobin() *RoundRobin {
 
 func (r *RoundRobin) Select() string {
 	r.Counter++
+
+	log.Println(r.Counter)
 
 	if r.Counter%2 == 0 {
 		return "a"

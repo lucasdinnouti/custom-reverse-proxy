@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 	"time"
+	
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type ContentType uint8
@@ -22,13 +25,17 @@ type Message struct {
 	Type 	 ContentType `json:"type"`
 }
 
-var rateLimiter = time.Tick(5 * time.Millisecond)
+var counter = prometheus.NewCounter(prometheus.CounterOpts{
+	Name: "request_count",
+	Help: "Number of requests received from runner"})
 
 func echoString(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "a")
 }
 
 func parseMessage(w http.ResponseWriter, r *http.Request) {
+	counter.Inc()
+
 	m := &Message{}
 
 	err := json.NewDecoder(r.Body).Decode(m)
@@ -40,16 +47,19 @@ func parseMessage(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.Body)
 	log.Println(m)
 
-	<-rateLimiter
-
+	time.Sleep(1 * time.Second)
 	fmt.Fprintf(w, "OK")
 }
 
 func main() {
 
+	prometheus.MustRegister(counter)
+
 	http.HandleFunc("/", echoString)
 
 	http.HandleFunc("/message", parseMessage)
+
+	http.Handle("/metrics", promhttp.Handler())
 
 	http.HandleFunc("/test", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Test request")
