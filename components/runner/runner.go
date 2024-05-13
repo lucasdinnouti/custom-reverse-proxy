@@ -3,24 +3,31 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"regexp"
 	"strings"
 	"time"
-	"runtime/pprof"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var tpsAtIteration = []int{10, 20, 50, 100}
-var testcase []*Message
+var (
+	tpsAtIteration = []int{10, 20, 50, 100}
+	testcase []*Message
+	
+	validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
+	mediaTypeRegex = regexp.MustCompile(`([A-Z]{3})-.{16}(jpg|opus) \(file attached\)`)
 
-var validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
-var mediaTypeRegex = regexp.MustCompile(`([A-Z]{3})-.{16}(jpg|opus) \(file attached\)`)
+	requestDurations = prometheus.NewHistogram(prometheus.HistogramOpts{
+		Name: "full_request_latency",
+		Help: "Latency of requests to processor",
+		Buckets: []float64{0.001, 0.005, 0.010, 0.100, 0.500, 1, 2, 3, 4, 5, 6, 8, 9, 10}})
+)
 
 type ContentType uint8
 const (
@@ -50,8 +57,7 @@ func ParseLine(line string) (*Message, error) {
 		return nil, errors.New("invalid line")
 	}
 
-	sep := " - "
-	s := strings.Split(line, sep)
+	s := strings.Split(line, " - ")
 	datetime, content := s[0], s[1]
 
 	message := Message{
@@ -115,49 +121,47 @@ func RunTestCase() {
 
 		for _, message := range testcase {
 			<-limiter
-			log.Println("Requesting ", time.Now())
 			request(message)
 		}
 	}
 }
 
 func request(message *Message) {
-	log.Println("Making Request...")
-
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
 	
 	Check(err)
 
-	log.Println("Requesting processor...")
-	log.Println(body)
+	log.Println("Requesting processor ", time.Now(), body)
+
+	before := time.Now() 
+	timer := prometheus.NewTimer(requestDurations)
 
 	result, err := http.Post(
 		"http://proxy.default.svc.cluster.local:8082/message",
 		"application/json",
 		body)
 
+	timer.ObserveDuration()
+	log.Println("Time elapsed", time.Since(before))	
+
 	if err != nil {
-		log.Println("[ERROR] ", err)
+		log.Println("Error: ", err)
 	}
 
-	log.Println(result)
+	log.Println("Response: ", result)
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
+
+	prometheus.MustRegister(requestDurations)
+
+	http.Handle("/metrics", promhttp.Handler())
+
+	go http.ListenAndServe(":8081", nil)
 
 	log.Println("Starting Runner!")
 
 	LoadTestCase("testcase_1.txt")
 	RunTestCase()
-
-	select {
-		case <-time.After(10 * time.Second):
-			log.Println("missed signal")
-		case <-ctx.Done():
-			stop()
-			log.Println("signal received")
-	}
 }

@@ -1,10 +1,12 @@
-FROM golang:1.19.3-alpine
+FROM golang:1.20.14-alpine
 
 WORKDIR /app
 
 COPY components/proxy/ ./
 
 RUN ls
+
+RUN go mod tidy
 
 RUN go mod download
 

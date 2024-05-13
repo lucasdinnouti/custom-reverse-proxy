@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  labels:
+    app: http-runner
   name: runner
 spec:
   containers:
@@ -14,6 +16,9 @@ spec:
       limits:
         memory: "64Mi"
         cpu: "200m"
+    ports:
+      - containerPort: 8081
+        protocol: TCP
 
 ---
 apiVersion: v1
@@ -22,7 +27,7 @@ metadata:
   name: runner
 spec:
   selector:
-    app.kubernetes.io/name: runner
+    app: http-runner
   ports:
     - protocol: TCP
       port: 8081
