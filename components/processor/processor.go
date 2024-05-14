@@ -1,11 +1,11 @@
 package main
 
 import (
+	"processor/processors"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 	
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -25,29 +25,48 @@ type Message struct {
 	Type 	 ContentType `json:"type"`
 }
 
-var counter = prometheus.NewCounter(prometheus.CounterOpts{
-	Name: "request_count",
-	Help: "Number of requests received from runner"})
-
-func echoString(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "a")
+type Processor interface {
+	Process(content string) string
 }
 
-func parseMessage(w http.ResponseWriter, r *http.Request) {
+var (
+	textProcessor = processors.NewText()
+	imageProcessor = processors.NewImage()
+	audioProcessor = processors.NewAudio()
+	defaultProcessor = processors.NewDefault()
+
+	counter = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "request_count",
+		Help: "Number of requests received from runner"})
+)
+
+func processMessage(message *Message) {
+	switch message.Type {
+	case Text:
+		textProcessor.Process(message.Content)
+	case Image:
+		imageProcessor.Process(message.Content)
+	case Audio:
+		audioProcessor.Process(message.Content)
+	default:
+		defaultProcessor.Process(message.Content)
+	}
+}
+
+func handleMessage(w http.ResponseWriter, r *http.Request) {
 	counter.Inc()
 
-	m := &Message{}
+	message := &Message{}
 
-	err := json.NewDecoder(r.Body).Decode(m)
+	err := json.NewDecoder(r.Body).Decode(message)
 
 	if err != nil {
 		log.Fatalln("Error Parsing Request Body", r.Body)
 	}
 
-	log.Println(r.Body)
-	log.Println(m)
+	log.Println(message)
+	processMessage(message)
 
-	time.Sleep(1 * time.Second)
 	fmt.Fprintf(w, "OK")
 }
 
@@ -55,9 +74,7 @@ func main() {
 
 	prometheus.MustRegister(counter)
 
-	http.HandleFunc("/", echoString)
-
-	http.HandleFunc("/message", parseMessage)
+	http.HandleFunc("/message", handleMessage)
 
 	http.Handle("/metrics", promhttp.Handler())
 
