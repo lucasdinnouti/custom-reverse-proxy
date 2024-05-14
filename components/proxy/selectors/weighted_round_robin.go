@@ -7,6 +7,6 @@ func NewWeightedRoundRobin() *WeightedRoundRobin {
 	return &WeightedRoundRobin{}
 }
 
-func (r *WeightedRoundRobin) Select() string {
-	return "a"
+func (r *WeightedRoundRobin) Select() (string, error) {
+	return "a", nil
 }

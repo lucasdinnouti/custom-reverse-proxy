@@ -1,27 +1,29 @@
 package selectors
 
-import (
-	"log"
-)
+import "errors"
 
 type RoundRobin struct {
-	Counter int
+	Counter    int
+	Hosts      []string
+	HostsCount int
 }
 
-func NewRoundRobin() *RoundRobin {
+func NewRoundRobin(hosts []string) *RoundRobin {
 	return &RoundRobin{
-		Counter: 0,
+		Counter:    0,
+		Hosts:      hosts,
+		HostsCount: len(hosts),
 	}
 }
 
-func (r *RoundRobin) Select() string {
+func (r *RoundRobin) Select() (string, error) {
 	r.Counter++
 
-	log.Println(r.Counter)
-
-	if r.Counter%2 == 0 {
-		return "a"
+	for i := 0; i < r.HostsCount; i++ {
+		if r.Counter%r.HostsCount == i {
+			return r.Hosts[i], nil
+		}
 	}
 
-	return "b"
+	return "", errors.New("faled to select host")
 }
