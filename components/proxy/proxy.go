@@ -43,6 +43,7 @@ func route(w http.ResponseWriter, r *http.Request) {
 		fn.ServeHTTP(w, r)
 		timer.ObserveDuration()
 		log.Println("Time elapsed", time.Since(before))
+		log.Println("")
 
 		return
 	}
@@ -55,12 +56,13 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	hosts := []string{"a", "b"}
+	weights := []int{1, 2}
 
 	switch algorithm := os.Getenv("ALGORITHM"); algorithm {
 	case "round_robin":
 		routeSelector = selectors.NewRoundRobin(hosts)
 	case "weighted_round_robin":
-		routeSelector = selectors.NewWeightedRoundRobin()
+		routeSelector = selectors.NewWeightedRoundRobin(hosts, weights)
 	case "metadata":
 		routeSelector = selectors.NewMetadata()
 	case "machine_learning":

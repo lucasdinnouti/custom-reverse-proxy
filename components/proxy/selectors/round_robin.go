@@ -1,7 +1,5 @@
 package selectors
 
-import "errors"
-
 type RoundRobin struct {
 	Counter    int
 	Hosts      []string
@@ -19,11 +17,5 @@ func NewRoundRobin(hosts []string) *RoundRobin {
 func (r *RoundRobin) Select() (string, error) {
 	r.Counter++
 
-	for i := 0; i < r.HostsCount; i++ {
-		if r.Counter%r.HostsCount == i {
-			return r.Hosts[i], nil
-		}
-	}
-
-	return "", errors.New("faled to select host")
+	return r.Hosts[r.Counter%r.HostsCount], nil
 }
