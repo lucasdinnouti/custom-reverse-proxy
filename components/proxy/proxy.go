@@ -18,26 +18,32 @@ var (
 	targetProxy   map[string]*httputil.ReverseProxy
 
 	requestDurations = prometheus.NewHistogram(prometheus.HistogramOpts{
-		Name: "proxy_request_latency",
-		Help: "Latency of requests received from runner",
+		Name:    "proxy_request_latency",
+		Help:    "Latency of requests received from runner",
 		Buckets: []float64{0.001, 0.005, 0.010, 0.100, 0.500, 1, 5, 10}})
 )
 
 type Selector interface {
-	Select() string
+	Select() (string, error)
 }
 
 func route(w http.ResponseWriter, r *http.Request) {
-	target := routeSelector.Select()
+	target, err := routeSelector.Select()
+
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
 	if fn, ok := targetProxy[target]; ok {
 		log.Println("target: ", target)
 
-		before := time.Now() 
+		before := time.Now()
 		timer := prometheus.NewTimer(requestDurations)
 		fn.ServeHTTP(w, r)
 		timer.ObserveDuration()
-		log.Println("Time elapsed", time.Since(before))	
+		log.Println("Time elapsed", time.Since(before))
+		log.Println("")
 
 		return
 	}
@@ -47,20 +53,22 @@ func route(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	prometheus.MustRegister(requestDurations)
-
 	http.Handle("/metrics", promhttp.Handler())
+
+	hosts := []string{"a", "b"}
+	weights := []int{1, 2}
 
 	switch algorithm := os.Getenv("ALGORITHM"); algorithm {
 	case "round_robin":
-		routeSelector = selectors.NewRoundRobin()
+		routeSelector = selectors.NewRoundRobin(hosts)
 	case "weighted_round_robin":
-		routeSelector = selectors.NewWeightedRoundRobin()
+		routeSelector = selectors.NewWeightedRoundRobin(hosts, weights)
 	case "metadata":
 		routeSelector = selectors.NewMetadata()
 	case "machine_learning":
 		routeSelector = selectors.NewMachineLearning()
 	default:
-		routeSelector = selectors.NewRoundRobin()
+		routeSelector = selectors.NewRoundRobin(hosts)
 	}
 
 	targetProxy = targets.Get()

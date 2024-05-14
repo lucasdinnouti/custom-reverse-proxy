@@ -7,6 +7,6 @@ func NewMachineLearning() *MachineLearning {
 	return &MachineLearning{}
 }
 
-func (r *MachineLearning) Select() string {
-	return "a"
+func (r *MachineLearning) Select() (string, error) {
+	return "a", nil
 }

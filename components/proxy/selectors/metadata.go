@@ -7,6 +7,6 @@ func NewMetadata() *Metadata {
 	return &Metadata{}
 }
 
-func (r *Metadata) Select() string {
-	return "a"
+func (r *Metadata) Select() (string, error) {
+	return "a", nil
 }

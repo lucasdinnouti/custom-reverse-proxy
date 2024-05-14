@@ -1,27 +1,21 @@
 package selectors
 
-import (
-	"log"
-)
-
 type RoundRobin struct {
-	Counter int
+	Counter    int
+	Hosts      []string
+	HostsCount int
 }
 
-func NewRoundRobin() *RoundRobin {
+func NewRoundRobin(hosts []string) *RoundRobin {
 	return &RoundRobin{
-		Counter: 0,
+		Counter:    0,
+		Hosts:      hosts,
+		HostsCount: len(hosts),
 	}
 }
 
-func (r *RoundRobin) Select() string {
+func (r *RoundRobin) Select() (string, error) {
 	r.Counter++
 
-	log.Println(r.Counter)
-
-	if r.Counter%2 == 0 {
-		return "a"
-	}
-
-	return "b"
+	return r.Hosts[r.Counter%r.HostsCount], nil
 }
