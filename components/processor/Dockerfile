@@ -2,7 +2,7 @@ FROM golang:1.20.14-alpine
 
 WORKDIR /app
 
-COPY components/processor/* ./
+COPY components/processor/ ./
 
 RUN go mod tidy
 

@@ -11,11 +11,11 @@ spec:
     imagePullPolicy: "Never"
     resources:
       requests:
-        memory: "64Mi"
-        cpu: "200m"
+        memory: "256Mi"
+        cpu: "500m"
       limits:
-        memory: "64Mi"
-        cpu: "200m"
+        memory: "256Mi"
+        cpu: "500m"
     env:
       - name: ALGORITHM
         value: "round_robin"
