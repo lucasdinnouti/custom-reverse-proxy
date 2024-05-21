@@ -1,4 +1,4 @@
-kind create cluster --name crp
+kind create cluster --name crp --config ./infra/manifests/cluster/kind.yaml
 
 kubectl cluster-info --context kind-crp
 
