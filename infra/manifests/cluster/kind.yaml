@@ -1,0 +1,8 @@
+apiVersion: kind.x-k8s.io/v1alpha4
+kind: Cluster
+name: crp
+nodes:
+  - role: control-plane
+    extraMounts:
+      - hostPath: /home/lucas.dinnouti/Documents/loadtest_results
+        containerPath: /app/loadtest_results

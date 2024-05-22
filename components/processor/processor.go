@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -13,10 +14,10 @@ import (
 
 type ContentType uint8
 const (
-  Text ContentType = iota
-  Image
-  Audio
-  Unknown
+	Text ContentType = iota
+	Image
+	Audio
+	Unknown
 )
 
 type Message struct {
@@ -67,7 +68,7 @@ func handleMessage(w http.ResponseWriter, r *http.Request) {
 	log.Println(message)
 	processMessage(message)
 
-	fmt.Fprintf(w, "OK")
+	fmt.Fprintf(w, os.Getenv("INSTANCE_TYPE"))
 }
 
 func main() {

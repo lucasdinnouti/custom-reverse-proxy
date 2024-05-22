@@ -5,6 +5,10 @@ metadata:
     app: http-processor-a
   name: processor-a
 spec:
+  volumes:
+    - name: lt-results
+      hostPath:
+        path: /home/lucas.dinnouti/Documents/loadtest_results
   containers:
   - name: processor-a
     image: processor:latest
@@ -16,6 +20,12 @@ spec:
       limits:
         memory: "64Mi"
         cpu: "200m"
+    env:
+      - name: INSTANCE_TYPE
+        value: "large-cpu"
+    volumeMounts:
+      - name: lt-results
+        mountPath: /loadtest_results
     ports:
       - containerPort: 8083
         protocol: TCP

@@ -2,9 +2,9 @@ FROM golang:1.20.14-alpine
 
 WORKDIR /app
 
-COPY components/runner/* ./
+COPY components/runner/ ./
 
-COPY datasets/chat_dos/chat_dos.txt ./testcase_1.txt
+COPY datasets/chat_dos/small.txt ./testcase.txt
 
 RUN go mod tidy
 
