@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: http-processor-c
+  name: processor-c
+spec:
+  volumes:
+    - name: lt-results
+      hostPath:
+        path: /home/lucas.dinnouti/Documents/loadtest_results
+  containers:
+  - name: processor-c
+    image: processor:latest
+    imagePullPolicy: "Never"
+    resources:
+      requests:
+        memory: "32Mi"
+        cpu: "100m"
+      limits:
+        memory: "32Mi"
+        cpu: "100m"
+    env:
+      - name: INSTANCE_TYPE
+        value: "medium-gpu"
+    volumeMounts:
+      - name: lt-results
+        mountPath: /loadtest_results
+    ports:
+      - containerPort: 8083
+        protocol: TCP
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: processor-c
+spec:
+  selector:
+    app: http-processor-c
+  ports:
+    - protocol: TCP
+      port: 8083
+      targetPort: 8083
