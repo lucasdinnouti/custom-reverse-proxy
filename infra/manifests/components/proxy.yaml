@@ -18,7 +18,7 @@ spec:
         cpu: "500m"
     env:
       - name: ALGORITHM
-        value: "weighted_round_robin"
+        value: "metadata"
     ports:
       - containerPort: 8082
         protocol: TCP

@@ -24,11 +24,11 @@ var (
 )
 
 type Selector interface {
-	Select() (string, error)
+	Select(*http.Request) (string, error)
 }
 
 func route(w http.ResponseWriter, r *http.Request) {
-	target, err := routeSelector.Select()
+	target, err := routeSelector.Select(r)
 
 	if err != nil {
 		log.Fatal(err)
@@ -55,8 +55,9 @@ func main() {
 	prometheus.MustRegister(requestDurations)
 	http.Handle("/metrics", promhttp.Handler())
 
-	hosts := []string{"a", "b"}
-	weights := []int{1, 2}
+	hosts := []string{"a", "b", "c"}
+	weights := []int{2, 1, 1}
+	types := map[string][]string{"image": []string{"c"}}
 
 	switch algorithm := os.Getenv("ALGORITHM"); algorithm {
 	case "round_robin":
@@ -64,14 +65,14 @@ func main() {
 	case "weighted_round_robin":
 		routeSelector = selectors.NewWeightedRoundRobin(hosts, weights)
 	case "metadata":
-		routeSelector = selectors.NewMetadata()
+		routeSelector = selectors.NewMetadata(hosts, types)
 	case "machine_learning":
 		routeSelector = selectors.NewMachineLearning()
 	default:
 		routeSelector = selectors.NewRoundRobin(hosts)
 	}
 
-	targetProxy = targets.Get()
+	targetProxy = targets.Build(hosts)
 	http.HandleFunc("/message", route)
 
 	http.ListenAndServe(":8082", nil)

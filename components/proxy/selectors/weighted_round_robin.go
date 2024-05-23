@@ -2,6 +2,7 @@ package selectors
 
 import (
 	"errors"
+	"net/http"
 )
 
 type WeightedRoundRobin struct {
@@ -27,7 +28,7 @@ func NewWeightedRoundRobin(hosts []string, weights []int) *WeightedRoundRobin {
 	}
 }
 
-func (r *WeightedRoundRobin) Select() (string, error) {
+func (r *WeightedRoundRobin) Select(request *http.Request) (string, error) {
 	r.Counter++
 
 	acc := 0
