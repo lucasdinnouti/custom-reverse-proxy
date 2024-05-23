@@ -1,27 +1,25 @@
 package targets
 
 import (
+	"fmt"
 	"log"
 	"net/http/httputil"
 	"net/url"
 )
 
-func Get() map[string]*httputil.ReverseProxy {
+func Build(hosts []string) map[string]*httputil.ReverseProxy {
 	targetProxy := map[string]*httputil.ReverseProxy{}
 
-	remoteUrl, err := url.Parse("http://processor-a.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return targetProxy
-	}
-	targetProxy["a"] = httputil.NewSingleHostReverseProxy(remoteUrl)
+	for _, h := range hosts {
 
-	remoteUrl, err = url.Parse("http://processor-b.default.svc.cluster.local:8083")
-	if err != nil {
-		log.Println("target parse fail:", err)
-		return targetProxy
+		dns := fmt.Sprintf("http://processor-%s.default.svc.cluster.local:8083", h)
+		remoteUrl, err := url.Parse(dns)
+		if err != nil {
+			log.Println("target parse fail:", err)
+			return targetProxy
+		}
+		targetProxy[h] = httputil.NewSingleHostReverseProxy(remoteUrl)
 	}
-	targetProxy["b"] = httputil.NewSingleHostReverseProxy(remoteUrl)
 
 	return targetProxy
 }
