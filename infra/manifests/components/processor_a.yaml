@@ -8,7 +8,7 @@ spec:
   volumes:
     - name: lt-results
       hostPath:
-        path: /home/lucas.dinnouti/Documents/loadtest_results
+        path: /home/lucasdinnouti/Documents/loadtest_results
   containers:
   - name: processor-a
     image: processor:latest
@@ -16,10 +16,10 @@ spec:
     resources:
       requests:
         memory: "64Mi"
-        cpu: "200m"
+        cpu: "20m"
       limits:
         memory: "64Mi"
-        cpu: "200m"
+        cpu: "20m"
     env:
       - name: INSTANCE_TYPE
         value: "large-cpu"

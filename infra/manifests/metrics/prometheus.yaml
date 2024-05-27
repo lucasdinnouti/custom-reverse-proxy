@@ -8,8 +8,8 @@ metadata:
 data:
   prometheus.yml: |-
     global:
-      scrape_interval: 30s
-      scrape_timeout: 30s
+      scrape_interval: 5s
+      scrape_timeout: 5s
       evaluation_interval: 1m
     
     scrape_configs:
@@ -104,11 +104,11 @@ spec:
         image: prom/prometheus:v2.45.5
         resources:
           requests:
-            memory: "64Mi"
-            cpu: "200m"
+            memory: "1024Mi"
+            cpu: "500m"
           limits:
-            memory: "64Mi"
-            cpu: "200m"
+            memory: "1024Mi"
+            cpu: "500m"
         securityContext:
           runAsUser: 0
           allowPrivilegeEscalation: false

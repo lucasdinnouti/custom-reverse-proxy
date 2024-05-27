@@ -4,5 +4,5 @@ name: crp
 nodes:
   - role: control-plane
     extraMounts:
-      - hostPath: /home/lucas.dinnouti/Documents/loadtest_results
+      - hostPath: /home/lucasdinnouti/Documents/loadtest_results
         containerPath: /app/loadtest_results
