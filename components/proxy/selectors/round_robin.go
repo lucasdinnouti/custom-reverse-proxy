@@ -1,5 +1,7 @@
 package selectors
 
+import "net/http"
+
 type RoundRobin struct {
 	Counter    int
 	Hosts      []string
@@ -14,7 +16,7 @@ func NewRoundRobin(hosts []string) *RoundRobin {
 	}
 }
 
-func (r *RoundRobin) Select() (string, error) {
+func (r *RoundRobin) Select(request *http.Request) (string, error) {
 	r.Counter++
 
 	return r.Hosts[r.Counter%r.HostsCount], nil
