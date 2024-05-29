@@ -31,7 +31,8 @@ type MessageResponse struct {
 	RequestedAt  string
 	ElapsedNanos string
 	Type         string
-	RoutedTo     string
+	InstanceId   string
+	InstanceType string
 }
 
 type ContentType uint8
@@ -59,7 +60,7 @@ func (e ContentType) String() string {
 // End of Message DTOs
 
 var (
-	tpsAtIteration  = []int{10, 20, 50, 100}
+	tpsAtIteration  = []int{120}
 	testcase        []*Message
 	loadtest_result []*MessageResponse
 
@@ -175,7 +176,7 @@ func RecordToCsv(name string) {
 	// Using WriteAll
 	var data [][]string
 	for _, record := range loadtest_result {
-		row := []string{record.RequestedAt, record.ElapsedNanos, record.Type, record.RoutedTo}
+		row := []string{record.RequestedAt, record.ElapsedNanos, record.Type, record.InstanceId, record.InstanceType}
 		data = append(data, row)
 	}
 	w.WriteAll(data)
@@ -213,17 +214,20 @@ func Request(message *Message) {
 	if response.StatusCode == http.StatusOK {
 		bodyBytes, _ := io.ReadAll(response.Body)
 
+		// Reponse is in format ID_SIZE-TYPE, e.g. a_large-gpu, b_small-cpu
 		instance := string(bodyBytes)
+		s := strings.Split(instance, "_")
+		inst_id, inst_type := s[0], s[1]
 
 		mr := MessageResponse{
 			RequestedAt:  fmt.Sprintf("%d", before.Unix()),
 			ElapsedNanos: fmt.Sprintf("%d", time.Since(before).Nanoseconds()),
 			Type:         message.Type.String(),
-			RoutedTo:     instance,
+			InstanceId:   inst_id,
+			InstanceType: inst_type,
 		}
 
-		log.Printf("message { requested_at: %d, elapsed_nanos: %d, type: %s, routed_to: %s }", before.Unix(), time.Since(before).Nanoseconds(), message.Type.String(), instance)
-		log.Printf("message { requested_at: %s, elapsed_nanos: %s, type: %s, routed_to: %s }", mr.RequestedAt, mr.ElapsedNanos, mr.Type, mr.RoutedTo)
+		log.Printf("message { requested_at: %s, elapsed_nanos: %s, type: %s, inst_id: %s, inst_type: %s }", mr.RequestedAt, mr.ElapsedNanos, mr.Type, mr.InstanceId, mr.InstanceType)
 
 		loadtest_result = append(loadtest_result, &mr)
 

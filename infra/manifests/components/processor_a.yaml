@@ -15,14 +15,14 @@ spec:
     imagePullPolicy: "Never"
     resources:
       requests:
-        memory: "64Mi"
-        cpu: "20m"
+        memory: "32Mi"
+        cpu: "200m"
       limits:
-        memory: "64Mi"
-        cpu: "20m"
+        memory: "32Mi"
+        cpu: "200m"
     env:
       - name: INSTANCE_TYPE
-        value: "large-cpu"
+        value: "a_large-cpu"
     volumeMounts:
       - name: lt-results
         mountPath: /loadtest_results

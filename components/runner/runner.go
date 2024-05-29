@@ -24,6 +24,8 @@ func main() {
 
 	go http.ListenAndServe(":8081", nil)
 
+	time.Sleep(30 * time.Second)
+
 	log.Println("Starting Runner!")
 
 	loadtest.LoadTestCase("testcase.txt")

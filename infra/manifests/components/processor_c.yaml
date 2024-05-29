@@ -22,7 +22,7 @@ spec:
         cpu: "100m"
     env:
       - name: INSTANCE_TYPE
-        value: "medium-gpu"
+        value: "c_medium-gpu"
     volumeMounts:
       - name: lt-results
         mountPath: /loadtest_results
