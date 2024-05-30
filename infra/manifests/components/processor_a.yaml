@@ -15,11 +15,11 @@ spec:
     imagePullPolicy: "Never"
     resources:
       requests:
-        memory: "32Mi"
-        cpu: "200m"
+        memory: "256Mi"
+        cpu: "500m"
       limits:
-        memory: "32Mi"
-        cpu: "200m"
+        memory: "256Mi"
+        cpu: "500m"
     env:
       - name: INSTANCE_TYPE
         value: "a_large-cpu"

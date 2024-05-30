@@ -1,91 +1,92 @@
 import requests
 import json
 import pandas as pd
+import sys
 
+from datetime import datetime, timezone, timedelta
 
 container_resource = {}
+args = {}
 
-# Query Prometheus for cpu usage over time 
+since = ((datetime.now(timezone.utc) - timedelta(hours=2))).strftime('%G-%m-%dT%X.000Z')
+until = (datetime.now(timezone.utc)).strftime('%G-%m-%dT%X.000Z')
 
-url = 'http://localhost:9090/api/v1/query_range'
-params = {
-    'query': '(sum(rate(container_cpu_usage_seconds_total{container=~"processor-."}[1m])) by (container) / (sum(container_spec_cpu_quota{container=~"processor-."}) by (container) / sum(container_spec_cpu_period{container=~"processor-."}) by (container))) * 100',
-    'start': '2024-05-28T00:00:00.000Z',
-    'end': '2024-05-28T02:30:00.000Z',
-    'step': '1s'
-}
+cpu_metric = '(sum(rate(container_cpu_usage_seconds_total{container=~"processor-."}[1m])) by (container) / (sum(container_spec_cpu_quota{container=~"processor-."}) by (container) / sum(container_spec_cpu_period{container=~"processor-."}) by (container))) * 100'
+mem_metric = '(sum(container_memory_usage_bytes{container=~"processor-."}) by (container) / sum (container_spec_memory_limit_bytes{container=~"processor-."}) by (container)) * 100'
 
-# save snapshot of metric values
-x = requests.post(url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, data=params)
-f = open("cpu_metrics.json", "w")
-f.write(x.text)
-f.close()
+def parse_args():
+    global args
+    global since
+    global until
+        
+    for i in range(1, (len(sys.argv) - 1), 2):
+        args[sys.argv[i]] = sys.argv[i + 1]
 
-response_json = json.loads(x.text)
-
-for result in response_json['data']['result']:
-    container = result['metric']['container']
+    if '--since' in args:
+        since = (datetime.now(timezone.utc) - timedelta(hours=int(args['--since']))).strftime('%G-%m-%dT%X.000Z')
     
-    for (timestamp, value) in result['values']:
-        if timestamp not in container_resource:
-            container_resource[timestamp] = {}
+    if '--until' in args:
+        until = (datetime.now(timezone.utc) - timedelta(hours=int(args['--until']))).strftime('%G-%m-%dT%X.000Z')
 
-        if container not in container_resource[timestamp]:
-            container_resource[timestamp][container] = {}
+    print(args)
 
-        container_resource[timestamp][container]['cpu'] = value
+def query_prometheus(query, resource_type):
 
+    url = 'http://localhost:9090/api/v1/query_range'
+    params = {
+        'query': query,
+        'start': since,
+        'end': until,
+        'step': '1s'
+    }
 
-# Query Prometheus for mem usage over time 
+    # save snapshot of metric values
+    x = requests.post(url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, data=params)
+    f = open(resource_type + "_metrics.json", "w")
+    f.write(x.text)
+    f.close()
 
-url = 'http://localhost:9090/api/v1/query_range'
-params = {
-    'query': '(sum(container_memory_usage_bytes{container=~"processor-."}) by (container) / sum (container_spec_memory_limit_bytes{container=~"processor-."}) by (container)) * 100',
-    'start': '2024-05-28T00:00:00.000Z',
-    'end': '2024-05-28T02:30:00.000Z',
-    'step': '1s'
-}
+    response_json = json.loads(x.text)
 
-# save snapshot of metric values
-x = requests.post(url, headers={'Content-Type': 'application/x-www-form-urlencoded'}, data=params)
-f = open("mem_metrics.json", "w")
-f.write(x.text)
-f.close()
+    if 'error' in response_json:
+        raise Exception('prometheus exception', response_json['error'])
 
-response_json = json.loads(x.text)
+    for result in response_json['data']['result']:
+        container = result['metric']['container']
+        
+        for (timestamp, value) in result['values']:
+            if timestamp not in container_resource:
+                container_resource[timestamp] = {}
 
-for result in response_json['data']['result']:
-    container = result['metric']['container']
-    
-    for (timestamp, value) in result['values']:
-        if timestamp not in container_resource:
-            container_resource[timestamp] = {}
+            if container not in container_resource[timestamp]:
+                container_resource[timestamp][container] = {}
 
-        if container not in container_resource[timestamp]:
-            container_resource[timestamp][container] = {}
+            container_resource[timestamp][container][resource_type] = value
 
-        container_resource[timestamp][container]['mem'] = value
+def enrich_loadtest_metrics():
+    # Read file containing loadtest results 
+    df = pd.read_csv(args['--csv'], names=['timestamp', 'elapsed', 'message_type', 'instance_id', 'instance_type'])
 
-# Read file containing loadtest results 
-df = pd.read_csv('result_100.csv', names=['timestamp', 'elapsed', 'message_type', 'instance_id', 'instance_type'])
+    for i, row in df.iterrows():
+        ts = int(row['timestamp'])
 
-for i, row in df.iterrows():
-    ts = int(row['timestamp'])
+        if ts in container_resource:
+            for res_type in ['cpu', 'mem']:
+                for instance in ['a', 'b', 'c']:
+                    # e.g.: df.at[i,'processor_a_cpu'] = float(container_resource[ts]['processor-a']['cpu'])
+                    df.at[i,'_'.join(['processor', instance, res_type])] = float(container_resource[ts]['processor-' + instance][res_type])
 
-    print(ts, i)
-    df.at[i,'processor_a_cpu'] = float(container_resource[ts]['processor-a']['cpu'])
-    df.at[i,'processor_b_cpu'] = float(container_resource[ts]['processor-b']['cpu'])
-    df.at[i,'processor_c_cpu'] = float(container_resource[ts]['processor-c']['cpu'])
-    df.at[i,'processor_a_mem'] = float(container_resource[ts]['processor-a']['mem'])
-    df.at[i,'processor_b_mem'] = float(container_resource[ts]['processor-b']['mem'])
-    df.at[i,'processor_c_mem'] = float(container_resource[ts]['processor-c']['mem'])
+        else:
+            print('warn: ', ts, 'not covered by prometheus metrics')
 
-print(df.to_string()) 
+    print(df.to_string())
 
-df.to_csv('result_100_r.csv')
+    df.to_csv('metrics_' + args['--csv'])
 
+if __name__ == '__main__':
+    parse_args()
 
+    query_prometheus(cpu_metric, 'cpu')
+    query_prometheus(mem_metric, 'mem')
 
-
-
-# print(container_resource)
+    enrich_loadtest_metrics()

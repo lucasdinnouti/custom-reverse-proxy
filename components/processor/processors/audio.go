@@ -9,7 +9,7 @@ func NewAudio() *Audio {
 
 func (a *Audio) Process(content string) string {
 	
-	WasteTime(200, 500)
+	WasteTime(100, 200)
 
 	return content
 }

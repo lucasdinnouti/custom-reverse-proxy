@@ -14,10 +14,13 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
+
+var mut sync.Mutex
 
 // Message DTOs (Maybe we can extract this to separate file)
 
@@ -60,7 +63,7 @@ func (e ContentType) String() string {
 // End of Message DTOs
 
 var (
-	tpsAtIteration  = []int{120}
+	tpsAtIteration  = []int{5, 10, 15, 17, 19, 20}
 	testcase        []*Message
 	loadtest_result []*MessageResponse
 
@@ -151,7 +154,7 @@ func RunTestCase(requestDurations *prometheus.Histogram) {
 			before := time.Now()
 			timer := prometheus.NewTimer(*requestDurations)
 
-			Request(message)
+			go Request(message)
 
 			timer.ObserveDuration()
 			log.Println("Time elapsed", time.Since(before))
@@ -229,7 +232,9 @@ func Request(message *Message) {
 
 		log.Printf("message { requested_at: %s, elapsed_nanos: %s, type: %s, inst_id: %s, inst_type: %s }", mr.RequestedAt, mr.ElapsedNanos, mr.Type, mr.InstanceId, mr.InstanceType)
 
+		mut.Lock()
 		loadtest_result = append(loadtest_result, &mr)
+		mut.Unlock()
 
 		log.Println("Routed to ", instance)
 	}

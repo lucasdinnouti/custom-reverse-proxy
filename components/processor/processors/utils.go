@@ -10,7 +10,7 @@ func WasteTime(a int, b int) {
 
 	isPrimeSlice = nil
 
-	n := (a + rand.Intn(b)) * 100
+	n := (a + rand.Intn(b - a)) * 100
 
 	for i := 2; i < n; i++ {
         if isPrime(i) {

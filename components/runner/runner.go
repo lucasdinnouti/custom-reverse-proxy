@@ -31,5 +31,5 @@ func main() {
 	loadtest.LoadTestCase("testcase.txt")
 	loadtest.RunTestCase(&requestDurations)
 
-	time.Sleep(1200 * time.Second)
+	time.Sleep(12 * time.Hour)
 }
