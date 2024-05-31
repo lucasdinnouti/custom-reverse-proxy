@@ -8,21 +8,21 @@ spec:
   volumes:
     - name: lt-results
       hostPath:
-        path: /home/lucas.dinnouti/Documents/loadtest_results
+        path: /home/lucasdinnouti/Documents/loadtest_results
   containers:
   - name: processor-b
     image: processor:latest
     imagePullPolicy: "Never"
     resources:
       requests:
-        memory: "32Mi"
-        cpu: "100m"
+        memory: "128Mi"
+        cpu: "250m"
       limits:
-        memory: "32Mi"
-        cpu: "100m"
+        memory: "128Mi"
+        cpu: "250m"
     env:
       - name: INSTANCE_TYPE
-        value: "medium-cpu"
+        value: "b_medium-cpu"
     volumeMounts:
       - name: lt-results
         mountPath: /loadtest_results

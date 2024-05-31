@@ -3,7 +3,6 @@ package processors
 import (
 	"os"
 	"strings"
-	"time"
 )
 
 type Image struct {
@@ -15,11 +14,12 @@ func NewImage() *Image {
 
 func (i *Image) Process(content string) string {
 	instance := os.Getenv("INSTANCE_TYPE")
+
 	if strings.Contains(instance, "gpu") {
-		time.Sleep(100 * time.Millisecond)
-		return content
+		WasteTime(10, 100)
+	} else {
+		WasteTime(200, 400)
 	}
 
-	time.Sleep(1000 * time.Millisecond)
 	return content
 }

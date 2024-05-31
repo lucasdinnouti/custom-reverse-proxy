@@ -24,10 +24,12 @@ func main() {
 
 	go http.ListenAndServe(":8081", nil)
 
+	time.Sleep(30 * time.Second)
+
 	log.Println("Starting Runner!")
 
 	loadtest.LoadTestCase("testcase.txt")
 	loadtest.RunTestCase(&requestDurations)
 
-	time.Sleep(1200 * time.Second)
+	time.Sleep(12 * time.Hour)
 }
