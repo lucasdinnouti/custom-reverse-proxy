@@ -15,14 +15,14 @@ spec:
     imagePullPolicy: "Never"
     resources:
       requests:
-        memory: "32Mi"
-        cpu: "100m"
+        memory: "128Mi"
+        cpu: "250m"
       limits:
-        memory: "32Mi"
-        cpu: "100m"
+        memory: "128Mi"
+        cpu: "250m"
     env:
       - name: INSTANCE_TYPE
-        value: "medium-gpu"
+        value: "c_medium-gpu"
     volumeMounts:
       - name: lt-results
         mountPath: /loadtest_results
