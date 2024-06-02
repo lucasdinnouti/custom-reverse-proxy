@@ -18,7 +18,7 @@ spec:
         cpu: "500m"
     env:
       - name: ALGORITHM
-        value: "round_robin"
+        value: "machine_learning"
     ports:
       - containerPort: 8082
         protocol: TCP

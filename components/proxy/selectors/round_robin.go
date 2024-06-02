@@ -16,6 +16,8 @@ func NewRoundRobin(hosts []string) *RoundRobin {
 	}
 }
 
+func (r *RoundRobin) Destroy() {}
+
 func (r *RoundRobin) Select(request *http.Request) (string, error) {
 	r.Counter++
 

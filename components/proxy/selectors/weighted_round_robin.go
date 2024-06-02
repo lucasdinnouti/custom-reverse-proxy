@@ -28,6 +28,8 @@ func NewWeightedRoundRobin(hosts []string, weights []int) *WeightedRoundRobin {
 	}
 }
 
+func (r *WeightedRoundRobin) Destroy() {}
+
 func (r *WeightedRoundRobin) Select(request *http.Request) (string, error) {
 	r.Counter++
 

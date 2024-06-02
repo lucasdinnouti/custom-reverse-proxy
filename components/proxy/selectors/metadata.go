@@ -22,6 +22,8 @@ func randRange(min, max int) int {
 	return rand.Intn(max-min) + min
 }
 
+func (r *Metadata) Destroy() {}
+
 func (r *Metadata) Select(request *http.Request) (string, error) {
 	messageType := request.Header.Get("X-Message-Type")
 	specializedHosts := r.Types[messageType]
