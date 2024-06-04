@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/http"
 
+	"proxy/metrics"
+
 	ort "github.com/yalue/onnxruntime_go"
 )
 
@@ -15,6 +17,7 @@ type MachineLearning struct {
 	HostsCount int
 	Types      map[string]string
 	Translator map[string]float32
+	PromCache  *metrics.PromCache
 }
 
 func NewMachineLearning(hosts []string, types map[string]string) *MachineLearning {
@@ -47,12 +50,16 @@ func NewMachineLearning(hosts []string, types map[string]string) *MachineLearnin
 		"medium-gpu": 2.0,
 	}
 
+	promCache := metrics.NewPromCache(hosts, 30)
+	go promCache.Run()
+
 	return &MachineLearning{
 		Session:    session,
 		Hosts:      hosts,
 		HostsCount: len(hosts),
 		Types:      types,
 		Translator: translator,
+		PromCache:  promCache,
 	}
 }
 
@@ -65,27 +72,24 @@ func (r *MachineLearning) buildInputTensor(request *http.Request) (*ort.Tensor[f
 	inputData := []float32{}
 
 	messageType := request.Header.Get("X-Message-Type")
-	processorAcpu := float32(4.346822)
-	processorBcpu := float32(6.074483)
-	processorCcpu := float32(14.455157)
-	processorAmem := float32(10.81543)
-	processorBmem := float32(10.229492)
-	processorCmem := float32(18.200684)
 
-	for i := 0; i < r.HostsCount; i++ {
-		instanceId := r.Hosts[i]
+	for _, instanceId := range r.Hosts {
 		instanceType := r.Types[instanceId]
 
 		inputData = append(inputData, r.Translator[messageType])
 		inputData = append(inputData, r.Translator[instanceId])
 		inputData = append(inputData, r.Translator[instanceType])
-		inputData = append(inputData, processorAcpu)
-		inputData = append(inputData, processorBcpu)
-		inputData = append(inputData, processorCcpu)
-		inputData = append(inputData, processorAmem)
-		inputData = append(inputData, processorBmem)
-		inputData = append(inputData, processorCmem)
+
+		for _, instanceId2 := range r.Hosts {
+			inputData = append(inputData, r.PromCache.CpuUsage[instanceId2])
+		}
+
+		for _, instanceId2 := range r.Hosts {
+			inputData = append(inputData, r.PromCache.MemoryUsage[instanceId2])
+		}
 	}
+
+	log.Println(inputData)
 
 	inputShape := ort.NewShape(int64(r.HostsCount), 9)
 	inputTensor, err := ort.NewTensor(inputShape, inputData)
