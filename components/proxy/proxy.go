@@ -25,6 +25,7 @@ var (
 
 type Selector interface {
 	Select(*http.Request) (string, error)
+	Destroy()
 }
 
 func route(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +59,7 @@ func main() {
 	hosts := []string{"a", "b", "c"}
 	weights := []int{2, 1, 1}
 	types := map[string][]string{"image": []string{"c"}}
+	nodeTypes := map[string]string{"a": "large-cpu", "b": "medium-cpu", "c": "medium-gpu"}
 
 	switch algorithm := os.Getenv("ALGORITHM"); algorithm {
 	case "round_robin":
@@ -67,7 +69,7 @@ func main() {
 	case "metadata":
 		routeSelector = selectors.NewMetadata(hosts, types)
 	case "machine_learning":
-		routeSelector = selectors.NewMachineLearning()
+		routeSelector = selectors.NewMachineLearning(hosts, nodeTypes)
 	default:
 		routeSelector = selectors.NewRoundRobin(hosts)
 	}
@@ -76,4 +78,5 @@ func main() {
 	http.HandleFunc("/message", route)
 
 	http.ListenAndServe(":8082", nil)
+	routeSelector.Destroy()
 }
