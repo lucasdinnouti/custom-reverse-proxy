@@ -8,6 +8,7 @@
 *.so
 *.dylib
 
+
 # Test binary, built with `go test -c`
 *.test
 
@@ -21,3 +22,6 @@
 go.work
 
 datasets/*
+dataset_generator/*.csv
+dataset_generator/*.json
+dataset_generator/enriched/

@@ -1,5 +1,9 @@
 package processors
 
+import (
+	"time"
+)
+
 type Default struct {
 }
 
@@ -9,7 +13,7 @@ func NewDefault() *Default {
 
 func (d *Default) Process(content string) string {
 
-	WasteTime(10, 100)
+	time.Sleep(10 * time.Microsecond)
 
 	return content
 }

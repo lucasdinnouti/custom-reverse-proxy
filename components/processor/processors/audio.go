@@ -1,5 +1,9 @@
 package processors
 
+import (
+	"time"
+)
+
 type Audio struct {
 }
 
@@ -9,7 +13,7 @@ func NewAudio() *Audio {
 
 func (a *Audio) Process(content string) string {
 	
-	WasteTime(100, 200)
+	time.Sleep(100 * time.Microsecond)
 
 	return content
 }

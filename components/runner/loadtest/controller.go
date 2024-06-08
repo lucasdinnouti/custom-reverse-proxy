@@ -62,8 +62,9 @@ func (e ContentType) String() string {
 
 // End of Message DTOs
 
-var (
-	tpsAtIteration  = []int{5, 10, 15, 17, 19, 20}
+var ( //10, 20, 30, 40, 
+	tpsAtIteration  = []int{ 10, 30, 60, 80, 100, 120, 120, 130, 130, 140, 140 }	
+	// tpsAtIteration  = []int{ 100, 110, 120, 130, 130, 140, 150, 160, 170 }	
 	testcase        []*Message
 	loadtest_result []*MessageResponse
 
@@ -151,13 +152,7 @@ func RunTestCase(requestDurations *prometheus.Histogram) {
 		for _, message := range testcase {
 			<-limiter
 
-			before := time.Now()
-			timer := prometheus.NewTimer(*requestDurations)
-
-			go Request(message)
-
-			timer.ObserveDuration()
-			log.Println("Time elapsed", time.Since(before))
+			go Request(message, requestDurations)
 		}
 
 		RecordToCsv(fmt.Sprintf("./loadtest_results/result_%d.csv", tps))
@@ -165,6 +160,8 @@ func RunTestCase(requestDurations *prometheus.Histogram) {
 }
 
 func RecordToCsv(name string) {
+	log.Println("Writting result to file, ", len(loadtest_result), " records.")
+
 	os.MkdirAll(filepath.Dir(name), 0770)
 	file, err := os.Create(name)
 	defer file.Close()
@@ -185,7 +182,10 @@ func RecordToCsv(name string) {
 	w.WriteAll(data)
 }
 
-func Request(message *Message) {
+func Request(message *Message, requestDurations *prometheus.Histogram) {
+	timer := prometheus.NewTimer(*requestDurations)
+	defer timer.ObserveDuration()
+
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
 
