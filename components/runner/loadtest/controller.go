@@ -142,7 +142,7 @@ func LoadTestCase(filename string) {
 
 }
 
-func RunTestCase(requestDurations *prometheus.Histogram) {
+func RunTestCase(requestDurations *prometheus.HistogramVec) {
 	log.Println("Running Test Case...")
 
 	for _, tps := range tpsAtIteration {
@@ -182,10 +182,9 @@ func RecordToCsv(name string) {
 	w.WriteAll(data)
 }
 
-func Request(message *Message, requestDurations *prometheus.Histogram) {
-	timer := prometheus.NewTimer(*requestDurations)
-	defer timer.ObserveDuration()
-
+func Request(message *Message, requestDurations *prometheus.HistogramVec) {
+	start := time.Now()
+	
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
 
@@ -221,6 +220,8 @@ func Request(message *Message, requestDurations *prometheus.Histogram) {
 		instance := string(bodyBytes)
 		s := strings.Split(instance, "_")
 		inst_id, inst_type := s[0], s[1]
+
+		(*requestDurations).WithLabelValues(inst_id).Observe(time.Since(start).Seconds())
 
 		mr := MessageResponse{
 			RequestedAt:  fmt.Sprintf("%d", before.Unix()),
