@@ -7,10 +7,12 @@ import(
 
 func WasteTime(a int, b int) {
 
-	var isPrimeSlice []string
+	var isPrimeSlice = []string{ "Is Prime.", "Is Prime." }
 	isPrimeSlice = nil
 
-	n := (a + rand.Intn(b - a)) * 100
+	multiplier := 30
+
+	n := (a + rand.Intn(b - a)) * multiplier
 
 	for i := 2; i < n; i++ {
         if isPrime(i) {
