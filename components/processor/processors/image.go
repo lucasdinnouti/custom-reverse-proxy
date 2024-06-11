@@ -16,9 +16,9 @@ func (i *Image) Process(content string) string {
 	instance := os.Getenv("INSTANCE_TYPE")
 
 	if strings.Contains(instance, "gpu") {
-		WasteTime(10, 100)
+		WasteTime(100, 110)
 	} else {
-		WasteTime(200, 400)
+		WasteTime(200, 220)
 	}
 
 	return content
