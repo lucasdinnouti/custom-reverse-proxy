@@ -28,6 +28,12 @@ def parse_args():
     if '--until' in args:
         until = (datetime.now(timezone.utc) - timedelta(hours=int(args['--until']))).strftime('%G-%m-%dT%X.000Z')
 
+    if '--from' in args:
+        since = args['--from']
+    
+    if '--to' in args:
+        until = args['--to']
+
     print(args)
 
 def query_prometheus(query, resource_type):
@@ -71,10 +77,11 @@ def enrich_loadtest_metrics():
         ts = int(row['timestamp'])
 
         if ts in container_resource:
-            for res_type in ['cpu', 'mem']:
-                for instance in ['a', 'b', 'c']:
-                    # e.g.: df.at[i,'processor_a_cpu'] = float(container_resource[ts]['processor-a']['cpu'])
-                    df.at[i,'_'.join(['processor', instance, res_type])] = float(container_resource[ts]['processor-' + instance][res_type])
+            for instance in ['a', 'b', 'c']:
+                if ('processor-' + instance) in container_resource[ts]:
+                    for res_type in container_resource[ts]['processor-' + instance]:
+                        # e.g.: df.at[i,'processor_a_cpu'] = float(container_resource[ts]['processor-a']['cpu'])
+                        df.at[i,'_'.join(['processor', instance, res_type])] = float(container_resource[ts]['processor-' + instance][res_type])
 
         else:
             print('warn: ', ts, 'not covered by prometheus metrics')

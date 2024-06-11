@@ -9,7 +9,7 @@ func NewDefault() *Default {
 
 func (d *Default) Process(content string) string {
 
-	WasteTime(10, 100)
+	WasteTime(100, 110)
 
 	return content
 }
