@@ -1,9 +1,5 @@
 package processors
 
-import (
-	"time"
-)
-
 type Text struct {
 }
 
@@ -12,7 +8,7 @@ func NewText() *Text {
 }
 
 func (t *Text) Process(content string) string {
-	time.Sleep(10 * time.Microsecond)
+	WasteTime(10, 100)
 
 	return content
 }
