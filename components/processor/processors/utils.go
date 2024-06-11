@@ -4,10 +4,10 @@ import(
 	"math/rand"
 )
 
-var isPrimeSlice []string
 
 func WasteTime(a int, b int) {
 
+	var isPrimeSlice []string
 	isPrimeSlice = nil
 
 	n := (a + rand.Intn(b - a)) * 100
@@ -19,6 +19,8 @@ func WasteTime(a int, b int) {
 			isPrimeSlice = append(isPrimeSlice, "Is Not Prime.")
 		}
     }
+
+    println(isPrimeSlice[rand.Intn(n - 1)])
 }
 
 func isPrime(n int) bool {
