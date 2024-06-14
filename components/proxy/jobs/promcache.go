@@ -1,4 +1,4 @@
-package metrics
+package jobs
 
 import (
 	"encoding/json"
