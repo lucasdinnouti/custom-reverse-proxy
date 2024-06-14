@@ -20,9 +20,9 @@ var (
 	)
 
 	requestCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "request_count",
-		Help: "Number of requests made to processor"},
-		[]string{"processor"},
+		Name: "request_status",
+		Help: "Number of requests by status"},
+		[]string{"status"},
 	)
 )
 

@@ -211,15 +211,20 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 	req.Header.Add("X-Message-Type", message.Type.String())
 
 	response, err := client.Do(req)
-
 	if err != nil {
-		log.Println("Error: ", err)
-	}
+		if os.IsTimeout(err) {
+			(*&requestCounter).WithLabelValues("408").Inc()
+		} else {
+			(*&requestCounter).WithLabelValues("400").Inc()
+		}
 
-	defer response.Body.Close()
+		log.Println("Error: ", err)
+		return
+	}
 
 	if response.StatusCode == http.StatusOK {
 		bodyBytes, _ := io.ReadAll(response.Body)
+		defer response.Body.Close()
 
 		// Reponse is in format ID_SIZE-TYPE, e.g. a_large-gpu, b_small-cpu
 		instance := string(bodyBytes)
@@ -227,7 +232,6 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 		inst_id, inst_type := s[0], s[1]
 
 		(*requestDurations).WithLabelValues(inst_id).Observe(time.Since(start).Seconds())
-		(*&requestCounter).WithLabelValues(inst_id).Inc()
 
 		mr := MessageResponse{
 			RequestedAt:  fmt.Sprintf("%d", before.Unix()),
@@ -245,4 +249,6 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 
 		log.Println("Routed to ", instance)
 	}
+
+	(*&requestCounter).WithLabelValues(strconv.Itoa(response.StatusCode)).Inc()
 }
