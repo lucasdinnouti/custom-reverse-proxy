@@ -1,18 +1,18 @@
 package main
 
 import (
-	"processor/processors"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	
-	"github.com/prometheus/client_golang/prometheus"
+	"processor/processors"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type ContentType uint8
+
 const (
 	Text ContentType = iota
 	Image
@@ -21,9 +21,9 @@ const (
 )
 
 type Message struct {
-	Datetime string 	 `json:"datetime"`
-	Content  string 	 `json:"content"`
-	Type 	 ContentType `json:"type"`
+	Datetime string      `json:"datetime"`
+	Content  string      `json:"content"`
+	Type     ContentType `json:"type"`
 }
 
 type Processor interface {
@@ -31,14 +31,10 @@ type Processor interface {
 }
 
 var (
-	textProcessor = processors.NewText()
-	imageProcessor = processors.NewImage()
-	audioProcessor = processors.NewAudio()
+	textProcessor    = processors.NewText()
+	imageProcessor   = processors.NewImage()
+	audioProcessor   = processors.NewAudio()
 	defaultProcessor = processors.NewDefault()
-
-	counter = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "request_count",
-		Help: "Number of requests received from runner"})
 )
 
 func processMessage(message *Message) {
@@ -55,8 +51,6 @@ func processMessage(message *Message) {
 }
 
 func handleMessage(w http.ResponseWriter, r *http.Request) {
-	counter.Inc()
-
 	message := &Message{}
 
 	err := json.NewDecoder(r.Body).Decode(message)
@@ -72,9 +66,6 @@ func handleMessage(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	prometheus.MustRegister(counter)
-
 	http.HandleFunc("/message", handleMessage)
 
 	http.Handle("/metrics", promhttp.Handler())

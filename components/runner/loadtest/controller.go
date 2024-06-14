@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -62,15 +63,14 @@ func (e ContentType) String() string {
 
 // End of Message DTOs
 
-var ( //10, 20, 30, 40, 
-	tpsAtIteration  = []int{ 10, 30, 60, 80, 100, 120, 120, 130, 130, 140, 140 }	
-	// tpsAtIteration  = []int{ 100, 110, 120, 130, 130, 140, 150, 160, 170 }	
+var ( //10, 20, 30, 40,
+	tpsAtIteration = []int{10, 30, 60, 80, 100, 120, 120, 130, 130, 140, 140}
+	// tpsAtIteration  = []int{ 100, 110, 120, 130, 130, 140, 150, 160, 170 }
 	testcase        []*Message
 	loadtest_result []*MessageResponse
 
 	validLineRegex = regexp.MustCompile(`\d+\/\d+\/\d+\, \d{2}\:\d{2} \-`)
 	mediaTypeRegex = regexp.MustCompile(`([A-Z]{3})-.{16}(jpg|opus) \(file attached\)`)
-	client         = &http.Client{}
 )
 
 func Check(err error) {
@@ -81,7 +81,6 @@ func Check(err error) {
 
 func ResolveContentType(content string) ContentType {
 	contentType := Text
-
 	match := mediaTypeRegex.MatchString(content)
 
 	if match {
@@ -144,6 +143,12 @@ func LoadTestCase(filename string) {
 
 func RunTestCase(requestDurations *prometheus.HistogramVec) {
 	log.Println("Running Test Case...")
+	timout, err := strconv.Atoi(os.Getenv("TIMEOUT"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client := &http.Client{Timeout: time.Duration(timout * int(time.Second))}
 
 	for _, tps := range tpsAtIteration {
 		log.Printf("Running at %d TPS", tps)
@@ -152,7 +157,7 @@ func RunTestCase(requestDurations *prometheus.HistogramVec) {
 		for _, message := range testcase {
 			<-limiter
 
-			go Request(message, requestDurations)
+			go Request(client, message, requestDurations)
 		}
 
 		RecordToCsv(fmt.Sprintf("./loadtest_results/result_%d.csv", tps))
@@ -182,9 +187,9 @@ func RecordToCsv(name string) {
 	w.WriteAll(data)
 }
 
-func Request(message *Message, requestDurations *prometheus.HistogramVec) {
+func Request(client *http.Client, message *Message, requestDurations *prometheus.HistogramVec) {
 	start := time.Now()
-	
+
 	body := new(bytes.Buffer)
 	err := json.NewEncoder(body).Encode(message)
 
