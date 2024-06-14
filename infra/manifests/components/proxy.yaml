@@ -18,7 +18,9 @@ spec:
         cpu: "500m"
     env:
       - name: ALGORITHM
-        value: "round_robin"
+        value: "machine_learning"
+      - name: METRICS_INTERVAL
+        value: "2"
     ports:
       - containerPort: 8082
         protocol: TCP

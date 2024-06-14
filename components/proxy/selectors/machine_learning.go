@@ -50,7 +50,7 @@ func NewMachineLearning(hosts []string, types map[string]string) *MachineLearnin
 		"medium-gpu": 2.0,
 	}
 
-	promCache := metrics.NewPromCache(hosts, 30)
+	promCache := metrics.NewPromCache(hosts)
 	go promCache.Run()
 
 	return &MachineLearning{
@@ -112,15 +112,18 @@ func (r *MachineLearning) buildOutputTensor(request *http.Request) (*ort.Tensor[
 
 func (r *MachineLearning) getBetterResult(results []float32) string {
 	min := results[0]
+	log.Println(results[0])
 	minIndex := 0
 	for i := 1; i < len(results); i++ {
 		if results[i] < min {
+			log.Println(results[i])
 			min = results[i]
 			minIndex = i
 		}
 	}
 
 	log.Println(min)
+	log.Println(minIndex)
 	return r.Hosts[minIndex]
 }
 
