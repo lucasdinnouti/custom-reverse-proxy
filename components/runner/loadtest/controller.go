@@ -141,7 +141,7 @@ func LoadTestCase(filename string) {
 
 }
 
-func RunTestCase(requestDurations *prometheus.HistogramVec) {
+func RunTestCase(requestDurations *prometheus.HistogramVec, requestCounter *prometheus.CounterVec) {
 	log.Println("Running Test Case...")
 	timout, err := strconv.Atoi(os.Getenv("TIMEOUT"))
 	if err != nil {
@@ -157,7 +157,7 @@ func RunTestCase(requestDurations *prometheus.HistogramVec) {
 		for _, message := range testcase {
 			<-limiter
 
-			go Request(client, message, requestDurations)
+			go Request(client, message, requestDurations, requestCounter)
 		}
 
 		RecordToCsv(fmt.Sprintf("./loadtest_results/result_%d.csv", tps))
@@ -187,7 +187,7 @@ func RecordToCsv(name string) {
 	w.WriteAll(data)
 }
 
-func Request(client *http.Client, message *Message, requestDurations *prometheus.HistogramVec) {
+func Request(client *http.Client, message *Message, requestDurations *prometheus.HistogramVec, requestCounter *prometheus.CounterVec) {
 	start := time.Now()
 
 	body := new(bytes.Buffer)
@@ -227,6 +227,7 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 		inst_id, inst_type := s[0], s[1]
 
 		(*requestDurations).WithLabelValues(inst_id).Observe(time.Since(start).Seconds())
+		(*&requestCounter).WithLabelValues(inst_id).Inc()
 
 		mr := MessageResponse{
 			RequestedAt:  fmt.Sprintf("%d", before.Unix()),

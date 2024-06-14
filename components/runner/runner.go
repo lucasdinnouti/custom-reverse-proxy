@@ -11,17 +11,25 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var requestDurations = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-	Name:    "full_request_latency",
-	Help:    "Latency of requests to processor",
-	Buckets: []float64{0.001, 0.005, 0.010, 0.100, 0.500, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 14, 16, 18, 20}},
+var (
+	requestDurations = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+		Name:    "full_request_latency",
+		Help:    "Latency of requests to processor",
+		Buckets: []float64{0.001, 0.005, 0.010, 0.100, 0.500, 1, 2, 3, 4, 5, 6, 8, 9, 10, 12, 14, 16, 18, 20}},
+		[]string{"routed_to"},
+	)
 
-	[]string{"routed_to"},
+	requestCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "request_count",
+		Help: "Number of requests made to processor"},
+		[]string{"processor"},
+	)
 )
 
 func main() {
 
 	prometheus.MustRegister(requestDurations)
+	prometheus.MustRegister(requestCounter)
 
 	http.Handle("/metrics", promhttp.Handler())
 
@@ -32,7 +40,7 @@ func main() {
 	log.Println("Starting Runner!")
 
 	loadtest.LoadTestCase("testcase.txt")
-	loadtest.RunTestCase(requestDurations)
+	loadtest.RunTestCase(requestDurations, requestCounter)
 
 	time.Sleep(12 * time.Hour)
 }
