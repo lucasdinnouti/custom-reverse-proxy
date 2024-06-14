@@ -41,5 +41,5 @@ func (r *WeightedRoundRobin) Select(request *http.Request) (string, error) {
 		acc += r.Weights[i]
 	}
 
-	return "", errors.New("faled to select host")
+	return "", errors.New("failed to select host")
 }
