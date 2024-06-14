@@ -57,7 +57,7 @@ func main() {
 	http.Handle("/metrics", promhttp.Handler())
 
 	hosts := []string{"a", "b", "c"}
-	weights := []int{4, 2, 3}
+	weights := []int{2, 1, 1}
 	types := map[string][]string{"image": []string{"c"}}
 	nodeTypes := map[string]string{"a": "large-cpu", "b": "medium-cpu", "c": "medium-gpu"}
 
