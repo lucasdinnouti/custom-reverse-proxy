@@ -18,7 +18,7 @@ spec:
         cpu: "500m"
     env:
       - name: TIMEOUT
-        value: "20"
+        value: "30"
     ports:
       - containerPort: 8081
         protocol: TCP
