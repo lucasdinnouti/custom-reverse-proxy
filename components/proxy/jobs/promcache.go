@@ -1,4 +1,4 @@
-package metrics
+package jobs
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -38,9 +39,14 @@ type PromCache struct {
 	IntervalSeconds int
 }
 
-func NewPromCache(hosts []string, intervalSeconds int) *PromCache {
+func NewPromCache(hosts []string) *PromCache {
 	cpuUsage := map[string]float32{}
 	memoryUsage := map[string]float32{}
+	intervalSeconds, err := strconv.Atoi(os.Getenv("METRICS_INTERVAL"))
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, h := range hosts {
 		cpuUsage[h] = 0

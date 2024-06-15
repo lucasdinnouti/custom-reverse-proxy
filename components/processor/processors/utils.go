@@ -2,23 +2,28 @@ package processors
 
 import(
 	"math/rand"
+	"strings"
+	"strconv"
 )
 
-var isPrimeSlice []string
 
 func WasteTime(a int, b int) {
 
+	var isPrimeSlice = []string{ "Is Prime.", "Is Prime." }
 	isPrimeSlice = nil
 
-	n := (a + rand.Intn(b - a)) * 100
+	baseMultiplier := 45
+	memMultiplier := 1
+
+	n := (a + rand.Intn(b - a)) * baseMultiplier
 
 	for i := 2; i < n; i++ {
         if isPrime(i) {
-			isPrimeSlice = append(isPrimeSlice, "Is Prime.")
-		} else {
-			isPrimeSlice = append(isPrimeSlice, "Is Not Prime.")
+			isPrimeSlice = append(isPrimeSlice, strings.Repeat(strconv.Itoa(i) + " is Prime.", memMultiplier))
 		}
     }
+
+    println(isPrimeSlice[rand.Intn(n - 1)])
 }
 
 func isPrime(n int) bool {

@@ -11,6 +11,7 @@ RUN apt-get update && \
 COPY components/proxy/ ./
 
 COPY datasets/model.onnx ./model.onnx
+COPY datasets/model-weight.onnx ./model-weight.onnx
 
 RUN go mod tidy
 
