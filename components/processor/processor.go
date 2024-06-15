@@ -1,18 +1,19 @@
 package main
 
 import (
-	"processor/processors"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	
+	"processor/processors"
+
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type ContentType uint8
+
 const (
 	Text ContentType = iota
 	Image
@@ -21,9 +22,9 @@ const (
 )
 
 type Message struct {
-	Datetime string 	 `json:"datetime"`
-	Content  string 	 `json:"content"`
-	Type 	 ContentType `json:"type"`
+	Datetime string      `json:"datetime"`
+	Content  string      `json:"content"`
+	Type     ContentType `json:"type"`
 }
 
 type Processor interface {
@@ -31,9 +32,9 @@ type Processor interface {
 }
 
 var (
-	textProcessor = processors.NewText()
-	imageProcessor = processors.NewImage()
-	audioProcessor = processors.NewAudio()
+	textProcessor    = processors.NewText()
+	imageProcessor   = processors.NewImage()
+	audioProcessor   = processors.NewAudio()
 	defaultProcessor = processors.NewDefault()
 
 	counter = prometheus.NewCounter(prometheus.CounterOpts{

@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: proxy
-    image: proxy:2
+    image: proxy:latest
     imagePullPolicy: "Never"
     resources:
       requests:

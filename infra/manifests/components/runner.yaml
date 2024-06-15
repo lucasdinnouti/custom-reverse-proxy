@@ -16,6 +16,9 @@ spec:
       limits:
         memory: "512Mi"
         cpu: "500m"
+    env:
+      - name: TIMEOUT
+        value: "30"
     ports:
       - containerPort: 8081
         protocol: TCP

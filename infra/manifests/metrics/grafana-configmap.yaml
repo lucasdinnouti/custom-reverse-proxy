@@ -57,7 +57,6 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 1,
       "links": [],
       "panels": [
         {
@@ -120,8 +119,8 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 10,
-            "w": 12,
+            "h": 9,
+            "w": 8,
             "x": 0,
             "y": 0
           },
@@ -216,9 +215,9 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 10,
-            "w": 12,
-            "x": 12,
+            "h": 9,
+            "w": 8,
+            "x": 8,
             "y": 0
           },
           "id": 44,
@@ -253,12 +252,108 @@ data:
           "type": "timeseries"
         },
         {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P1809F7CD0C75ACF3"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green",
+                    "value": null
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              }
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 0
+          },
+          "id": 50,
+          "options": {
+            "legend": {
+              "calcs": [],
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "maxHeight": 600,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "P1809F7CD0C75ACF3"
+              },
+              "editorMode": "code",
+              "expr": "sum(rate(request_status[5m])) by (status)",
+              "instant": false,
+              "legendFormat": "__auto",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Request Count by status",
+          "type": "timeseries"
+        },
+        {
           "collapsed": false,
           "gridPos": {
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 10
+            "y": 9
           },
           "id": 38,
           "panels": [],
@@ -329,7 +424,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 0,
-            "y": 11
+            "y": 10
           },
           "id": 43,
           "options": {
@@ -465,7 +560,7 @@ data:
             "h": 8,
             "w": 12,
             "x": 12,
-            "y": 11
+            "y": 10
           },
           "id": 45,
           "options": {
@@ -490,7 +585,7 @@ data:
               "editorMode": "code",
               "expr": "histogram_quantile(0.9, sum(rate(full_request_latency_bucket[5m])) by (le,routed_to))",
               "instant": false,
-              "legendFormat": "P90",
+              "legendFormat": "P90 processor-{{routed_to}}",
               "range": true,
               "refId": "A"
             }
@@ -504,7 +599,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 19
+            "y": 18
           },
           "id": 22,
           "panels": [],
@@ -574,7 +669,7 @@ data:
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 20
+            "y": 19
           },
           "id": 8,
           "options": {
@@ -670,7 +765,7 @@ data:
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 20
+            "y": 19
           },
           "id": 9,
           "options": {
@@ -788,7 +883,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 29
+            "y": 28
           },
           "id": 12,
           "options": {
@@ -845,7 +940,7 @@ data:
             "h": 1,
             "w": 24,
             "x": 0,
-            "y": 37
+            "y": 36
           },
           "id": 17,
           "panels": [],
@@ -915,7 +1010,7 @@ data:
             "h": 9,
             "w": 12,
             "x": 0,
-            "y": 38
+            "y": 37
           },
           "id": 1,
           "options": {
@@ -1011,7 +1106,7 @@ data:
             "h": 9,
             "w": 12,
             "x": 12,
-            "y": 38
+            "y": 37
           },
           "id": 5,
           "options": {
@@ -1129,7 +1224,7 @@ data:
             "h": 8,
             "w": 8,
             "x": 0,
-            "y": 47
+            "y": 46
           },
           "id": 2,
           "options": {
@@ -1187,9 +1282,13 @@ data:
         "list": [
           {
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "All",
               "value": "$__all"
+            },
+            "datasource": {
+              "type": "prometheus",
+              "uid": "P1809F7CD0C75ACF3"
             },
             "definition": "label_values(container_memory_usage_bytes{container=~\"processor-.\"},container)",
             "hide": 0,
@@ -1211,7 +1310,7 @@ data:
         ]
       },
       "time": {
-        "from": "now-1h",
+        "from": "now-30m",
         "to": "now"
       },
       "timeRangeUpdatedDuringEditOrView": false,
@@ -1219,6 +1318,6 @@ data:
       "timezone": "browser",
       "title": "Load Balancing Tests",
       "uid": "bdo41921n9uyod",
-      "version": 5,
+      "version": 1,
       "weekStart": ""
     }
