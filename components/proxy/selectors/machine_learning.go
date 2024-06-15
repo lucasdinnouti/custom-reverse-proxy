@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"proxy/metrics"
+	"proxy/jobs"
 
 	ort "github.com/yalue/onnxruntime_go"
 )
@@ -17,7 +17,7 @@ type MachineLearning struct {
 	HostsCount int
 	Types      map[string]string
 	Translator map[string]float32
-	PromCache  *metrics.PromCache
+	PromCache  *jobs.PromCache
 }
 
 func NewMachineLearning(hosts []string, types map[string]string) *MachineLearning {
@@ -50,7 +50,7 @@ func NewMachineLearning(hosts []string, types map[string]string) *MachineLearnin
 		"medium-gpu": 2.0,
 	}
 
-	promCache := metrics.NewPromCache(hosts)
+	promCache := jobs.NewPromCache(hosts)
 	go promCache.Run()
 
 	return &MachineLearning{
@@ -89,8 +89,6 @@ func (r *MachineLearning) buildInputTensor(request *http.Request) (*ort.Tensor[f
 		}
 	}
 
-	log.Println(inputData)
-
 	inputShape := ort.NewShape(int64(r.HostsCount), 9)
 	inputTensor, err := ort.NewTensor(inputShape, inputData)
 	if err != nil {
@@ -100,7 +98,7 @@ func (r *MachineLearning) buildInputTensor(request *http.Request) (*ort.Tensor[f
 	return inputTensor, nil
 }
 
-func (r *MachineLearning) buildOutputTensor(request *http.Request) (*ort.Tensor[float32], error) {
+func (r *MachineLearning) buildOutputTensor() (*ort.Tensor[float32], error) {
 	outputShape := ort.NewShape(int64(r.HostsCount), 1)
 	outputTensor, err := ort.NewEmptyTensor[float32](outputShape)
 	if err != nil {
@@ -122,8 +120,6 @@ func (r *MachineLearning) getBetterResult(results []float32) string {
 		}
 	}
 
-	log.Println(min)
-	log.Println(minIndex)
 	return r.Hosts[minIndex]
 }
 
@@ -134,7 +130,7 @@ func (r *MachineLearning) Select(request *http.Request) (string, error) {
 		return "", err
 	}
 
-	outputTensor, err := r.buildOutputTensor(request)
+	outputTensor, err := r.buildOutputTensor()
 	defer outputTensor.Destroy()
 	if err != nil {
 		return "", err

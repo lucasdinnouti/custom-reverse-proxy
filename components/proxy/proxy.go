@@ -58,6 +58,7 @@ func main() {
 
 	hosts := []string{"a", "b", "c"}
 	weights := []int{2, 1, 1}
+	initialWeights := []int{0, 0, 0}
 	types := map[string][]string{"image": []string{"c"}}
 	nodeTypes := map[string]string{"a": "large-cpu", "b": "medium-cpu", "c": "medium-gpu"}
 
@@ -70,6 +71,8 @@ func main() {
 		routeSelector = selectors.NewMetadata(hosts, types)
 	case "machine_learning":
 		routeSelector = selectors.NewMachineLearning(hosts, nodeTypes)
+	case "machine_learning_weight":
+		routeSelector = selectors.NewMachineLearningWeight(hosts, nodeTypes, initialWeights)
 	default:
 		routeSelector = selectors.NewRoundRobin(hosts)
 	}
