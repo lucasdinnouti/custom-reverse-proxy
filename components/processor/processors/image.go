@@ -18,7 +18,7 @@ func (i *Image) Process(content string) string {
 	if strings.Contains(instance, "gpu") {
 		WasteTime(100, 110)
 	} else {
-		WasteTime(200, 220)
+		WasteTime(300, 330)
 	}
 
 	return content

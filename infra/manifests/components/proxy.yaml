@@ -20,7 +20,9 @@ spec:
       - name: ALGORITHM
         value: "machine_learning_weight"
       - name: WEIGHT_INTERVAL
-        value: "5"
+        value: "10"
+      - name: METRICS_INTERVAL
+        value: "2"
     ports:
       - containerPort: 8082
         protocol: TCP

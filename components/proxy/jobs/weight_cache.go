@@ -54,7 +54,7 @@ func NewWeightCache(hosts []string, types map[string]string, initialWeights []in
 		"medium-gpu": 2.0,
 	}
 
-	promCache := NewPromCache(hosts, 2)
+	promCache := NewPromCache(hosts)
 	go promCache.Run()
 
 	intervalSeconds, err := strconv.Atoi(os.Getenv("WEIGHT_INTERVAL"))

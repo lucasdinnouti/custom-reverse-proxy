@@ -63,7 +63,7 @@ func (e ContentType) String() string {
 // End of Message DTOs
 
 var ( //10, 20, 30, 40, 
-	tpsAtIteration  = []int{ 10, 30, 60, 80, 100, 120, 120, 130, 130, 140, 140 }	
+	tpsAtIteration  = []int{ 30, 60, 80, 100, 120, 120, 130, 130, 140, 140 }	
 	// tpsAtIteration  = []int{ 100, 110, 120, 130, 130, 140, 150, 160, 170 }	
 	testcase        []*Message
 	loadtest_result []*MessageResponse
