@@ -7,7 +7,7 @@ kind load docker-image runner:latest --name crp
 kind load docker-image proxy:latest --name crp
 
 export ALGORITHM="round_robin"
-envsubst < infra/manifests/components/proxy.yaml | kubectl apply -f -
 
-kubectl apply -f ./infra/manifests/components
+for f in ./infra/manifests/components/*.yaml; do envsubst < $f | kubectl apply -f -; done
+
 kubectl apply -f ./infra/manifests/metrics
