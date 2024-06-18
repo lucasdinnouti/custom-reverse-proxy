@@ -8,6 +8,6 @@ kind load docker-image proxy:latest --name crp
 
 kubectl apply -f ./infra/manifests/metrics
 
-export ALGORITHM="round_robin"
+export ALGORITHM="machine_learning_weight"
 
 for f in ./infra/manifests/components/*.yaml; do envsubst < $f | kubectl apply -f -; done
