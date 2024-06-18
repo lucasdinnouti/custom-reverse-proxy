@@ -211,6 +211,7 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 	req.Header.Add("X-Message-Type", message.Type.String())
 
 	response, err := client.Do(req)
+	defer response.Body.Close()
 	if err != nil {
 		if os.IsTimeout(err) {
 			(*&requestCounter).WithLabelValues("408").Inc()
@@ -224,7 +225,6 @@ func Request(client *http.Client, message *Message, requestDurations *prometheus
 
 	if response.StatusCode == http.StatusOK {
 		bodyBytes, _ := io.ReadAll(response.Body)
-		defer response.Body.Close()
 
 		// Reponse is in format ID_SIZE-TYPE, e.g. a_large-gpu, b_small-cpu
 		instance := string(bodyBytes)

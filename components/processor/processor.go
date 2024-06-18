@@ -61,6 +61,7 @@ func handleMessage(w http.ResponseWriter, r *http.Request) {
 	message := &Message{}
 
 	err := json.NewDecoder(r.Body).Decode(message)
+	defer r.Body.Close()
 
 	if err != nil {
 		log.Fatalln("Error Parsing Request Body", r.Body)
