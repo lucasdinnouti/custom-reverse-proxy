@@ -18,7 +18,7 @@ spec:
         cpu: "500m"
     env:
       - name: ALGORITHM
-        value: "machine_learning_weight"
+        value: ${ALGORITHM}
       - name: WEIGHT_INTERVAL
         value: "10"
       - name: METRICS_INTERVAL

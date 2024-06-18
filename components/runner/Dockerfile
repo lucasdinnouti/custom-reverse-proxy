@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY components/runner/ ./
 
-COPY datasets/chat_dos/chat_dos.txt ./testcase.txt
+COPY datasets/chat_dilzete/chat_dilzete.txt ./testcase.txt
 
 RUN go mod tidy
 
