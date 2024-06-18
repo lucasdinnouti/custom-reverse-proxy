@@ -84,7 +84,12 @@ func (r *WeightCache) Destroy() {
 }
 
 func (r *WeightCache) IncType(messageType string) {
-	r.TypeCounter[messageType]++
+	switch (messageType) {
+	case "image":
+		r.TypeCounter[messageType]+=10
+	default:
+		r.TypeCounter[messageType]++		
+	}
 }
 
 func (r *WeightCache) getBiggestType() string {
@@ -141,19 +146,32 @@ func (r *WeightCache) buildOutputTensor() (*ort.Tensor[float32], error) {
 }
 
 func (r *WeightCache) setWeights(results []float32) {
-	latencyToHost := map[int]int{}
 	latencyList := []int{}
-	for k, v := range results {
-		latencyToHost[int(v)] = k
-		latencyList = append(latencyList, int(v))
+
+	for _, latency := range results {
+		latencyList = append(latencyList, int(latency))
 	}
 
 	sort.Ints(latencyList)
 
-	weights := []int{3, 2, 1}
-	for k, v := range latencyList {
-		i := latencyToHost[v]
-		r.Weights[i] = weights[k]
+	fastest := float32(latencyList[0])
+	slowest := float32(latencyList[len(latencyList) - 1])
+
+	variation := slowest - fastest
+	margin := float32(variation) * 0.33
+
+	for host, latency := range results {
+		weight := 2
+		
+		if (latency > (slowest - margin)) {
+			weight = 1
+		}
+		
+		if (latency < (fastest + margin)) {
+			weight = 3
+		}
+
+		r.Weights[host] = weight 
 	}
 
 	log.Println(results)
